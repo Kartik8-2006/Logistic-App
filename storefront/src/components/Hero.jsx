@@ -26,7 +26,7 @@ export default function Hero() {
     <section className="relative h-screen w-full overflow-hidden bg-background flex flex-col justify-center">
       <motion.div style={{ y: backgroundY }} className="absolute inset-0 w-full h-[120%] -top-[10%] z-0">
         {mounted && (
-          <video src="/assets/hero/VIdeo.mp4" autoPlay loop muted playsInline
+          <video src="/assets/hero/site-video.mp4" autoPlay loop muted playsInline
             style={{ objectPosition: "center center" }}
             className="absolute inset-0 w-full h-full object-cover opacity-80"
           />

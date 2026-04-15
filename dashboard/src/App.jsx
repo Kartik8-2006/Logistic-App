@@ -5,12 +5,10 @@ import {
   ArrowRight,
   BarChart3,
   Bell,
-  Bot,
   CalendarDays,
   ChevronDown,
   ChevronRight,
   ClipboardCheck,
-  ClipboardList,
   Clock3,
   DollarSign,
   FileCheck2,
@@ -81,31 +79,31 @@ const fallbackData = {
       noteTone: 'text-slate-500',
     },
     {
-      id: 'exceptions',
-      label: 'Exceptions',
-      value: '12',
-      note: '3 critical alerts',
+      id: 'open-loads',
+      label: 'Open Loads',
+      value: '142',
+      note: '18 due today',
+      icon: 'truck',
+      iconTone: 'bg-blue-100 text-blue-600',
+      noteTone: 'text-amber-600',
+    },
+    {
+      id: 'pending-pod',
+      label: 'Pending POD',
+      value: '27',
+      note: 'Delivered but proof pending',
+      icon: 'clock',
+      iconTone: 'bg-amber-100 text-amber-600',
+      noteTone: 'text-slate-500',
+    },
+    {
+      id: 'overdue-invoices',
+      label: 'Overdue Invoices',
+      value: '9',
+      note: 'Total overdue amount: $42,500',
       icon: 'alert',
       iconTone: 'bg-rose-100 text-rose-600',
       noteTone: 'text-rose-500',
-    },
-    {
-      id: 'fuel-cost',
-      label: 'Fuel Cost (MTD)',
-      value: '$89.2K',
-      note: '+8% vs target',
-      icon: 'fuel',
-      iconTone: 'bg-amber-100 text-amber-600',
-      noteTone: 'text-rose-500',
-    },
-    {
-      id: 'revenue',
-      label: 'Revenue (MTD)',
-      value: '$1.2M',
-      note: '+15% vs last month',
-      icon: 'revenue',
-      iconTone: 'bg-emerald-100 text-emerald-600',
-      noteTone: 'text-emerald-600',
     },
   ],
   vehicles: [
@@ -791,13 +789,11 @@ const fallbackData = {
 
 const sidebarItems = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'orders', label: 'Orders / Loads', icon: ClipboardList },
   { key: 'dispatch', label: 'Dispatch Board', icon: Grid2x2 },
   { key: 'routes', label: 'Routes & Tracking', icon: Route },
   { key: 'pod', label: 'Proof of Delivery', icon: FileCheck2 },
   { key: 'billing', label: 'Billing & Invoices', icon: ReceiptText },
   { key: 'reports', label: 'Reports', icon: BarChart3 },
-  { key: 'ai', label: 'AI Ops Assistant', icon: Bot },
   { key: 'settings', label: 'Settings', icon: Settings },
 ]
 
@@ -853,13 +849,6 @@ const metricIcons = {
   alert: Bell,
   fuel: Gauge,
   revenue: DollarSign,
-}
-
-const alertToneStyles = {
-  rose: 'border-rose-200 bg-rose-50',
-  amber: 'border-amber-200 bg-amber-50',
-  blue: 'border-blue-200 bg-blue-50',
-  yellow: 'border-yellow-200 bg-yellow-50',
 }
 
 const quickActionIcons = {
@@ -971,7 +960,6 @@ function App() {
   const mapSummary = useMemo(() => dashboardData.mapSummary ?? [], [dashboardData.mapSummary])
   const dispatches = useMemo(() => dashboardData.dispatches ?? [], [dashboardData.dispatches])
   const orders = useMemo(() => dashboardData.orders ?? [], [dashboardData.orders])
-  const alerts = useMemo(() => dashboardData.alerts ?? [], [dashboardData.alerts])
   const quickActions = useMemo(() => dashboardData.quickActions ?? [], [dashboardData.quickActions])
   const fleetSummary = useMemo(() => dashboardData.fleetSummary ?? [], [dashboardData.fleetSummary])
   const fleet = useMemo(() => dashboardData.fleet ?? [], [dashboardData.fleet])
@@ -1458,30 +1446,7 @@ function App() {
                   </article>
                 </div>
 
-                <div className="mt-5 grid gap-4 xl:grid-cols-[1.35fr_1fr]">
-                  <article className="rounded-2xl border border-slate-200 bg-white shadow-[0_12px_35px_-30px_rgba(15,23,42,0.35)]">
-                    <div className="border-b border-slate-200 px-5 py-4">
-                      <h2 className="text-[1.65rem] font-bold tracking-tight text-slate-800">Alerts & Exceptions</h2>
-                    </div>
-                    <div className="space-y-3 p-4">
-                      {alerts.map((alert) => (
-                        <div
-                          key={alert.id}
-                          className={`rounded-2xl border px-4 py-3 ${alertToneStyles[alert.tone] ?? 'border-slate-200 bg-slate-50'}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" />
-                            <div>
-                              <p className="text-[1rem] font-bold tracking-tight text-slate-700">{alert.title}</p>
-                              <p className="text-[0.86rem] font-medium text-slate-600">{alert.detail}</p>
-                              <p className="mt-1 text-[0.84rem] font-semibold text-slate-500">{alert.meta}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </article>
-
+                <div className="mt-5">
                   <article className="rounded-2xl border border-slate-200 bg-white shadow-[0_12px_35px_-30px_rgba(15,23,42,0.35)]">
                     <div className="border-b border-slate-200 px-5 py-4">
                       <h2 className="text-[1.65rem] font-bold tracking-tight text-slate-800">Quick Actions</h2>
@@ -1508,31 +1473,20 @@ function App() {
                   <p className="mt-4 text-sm font-medium text-slate-400">Loading live metrics...</p>
                 ) : null}
               </section>
-            ) : (activeSection === 'orders' || activeSection === 'dispatch') ? (
+            ) : activeSection === 'dispatch' ? (
               <section className="h-[calc(100vh-85px)] overflow-hidden relative">
                 <div className="flex h-full min-h-0 overflow-hidden relative">
                   <article className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
                     <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
-                      <h2 className="text-[2rem] font-bold tracking-tight text-slate-800">
-                        {activeSection === 'dispatch' ? 'Dispatch Board' : 'Orders / Loads'}
-                      </h2>
+                      <h2 className="text-[2rem] font-bold tracking-tight text-slate-800">Dispatch Board</h2>
 
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600"
                         >
-                          {activeSection === 'dispatch' ? (
-                            <>
-                              <UserPlus className="h-4 w-4" />
-                              Auto-Assign
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="h-4 w-4" />
-                              Import Loads
-                            </>
-                          )}
+                          <UserPlus className="h-4 w-4" />
+                          Auto-Assign
                         </button>
                         <button
                           type="button"
@@ -4078,13 +4032,6 @@ function App() {
                 </section>
               );
             })() : activeSection === 'pod' ? (() => {
-              const podSummary = {
-                pending: 12,
-                submitted: 8,
-                approved: 156,
-                rejected: 3,
-                total: 179
-              };
 
               const podTabs = [
                 { id: 'All Loads', count: 179 },
@@ -4216,22 +4163,6 @@ function App() {
                           <button className="flex items-center gap-2.5 rounded-xl bg-blue-600 px-5 py-2.5 text-[0.9rem] font-bold text-white shadow-[0_4px_12px_-4px_rgba(37,99,235,0.4)] transition hover:bg-blue-700">
                             <Upload className="h-[15px] w-[15px]" strokeWidth={2.5} /> Bulk Upload
                           </button>
-                        </div>
-                      </div>
-
-                      {/* Summary Metrics */}
-                      <div className="flex items-center gap-8 text-[0.9rem] font-bold text-slate-600 border-b border-slate-100 pb-5">
-                        <div className="flex items-center gap-2">
-                          Pending Upload: <span className="rounded-md bg-slate-100 px-2.5 py-1 text-slate-700 tracking-tight">{podSummary.pending}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          Submitted: <span className="rounded-md bg-[#eff6ff] px-2.5 py-1 text-[#3b82f6] tracking-tight">{podSummary.submitted}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          Approved: <span className="rounded-md bg-[#ebfdf5] px-2.5 py-1 text-[#10b981] tracking-tight">{podSummary.approved}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          Rejected: <span className="rounded-md bg-[#fef2f2] px-2.5 py-1 text-[#ef4444] tracking-tight">{podSummary.rejected}</span>
                         </div>
                       </div>
 
@@ -4492,9 +4423,9 @@ function App() {
             })() : activeSection === 'billing' ? (() => {
               const IconComp = sidebarItems.find(item => item.key === 'billing')?.icon || ReceiptText;
               return (
-                <section className="flex flex-col h-[calc(100vh-85px)] bg-white pb-6 relative overflow-hidden">
+                <section className="flex flex-col h-[calc(100vh-85px)] bg-white pb-4 relative overflow-hidden">
                   {/* Header Container */}
-                  <div className="shrink-0 pt-6 pb-0 bg-white">
+                  <div className="shrink-0 pt-4 pb-0 bg-white">
                     <div className="w-full flex flex-col px-6 lg:px-8">
                       {/* Title & Action Buttons */}
                       <div className="flex items-start justify-between">
@@ -4503,12 +4434,6 @@ function App() {
                           <p className="text-[0.95rem] font-medium text-slate-500 mt-1">Manage invoices, track payments, and handle customer billing</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <button className="flex items-center gap-2 rounded-lg bg-[#f8fafc] px-4 py-2 text-[0.85rem] font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                            <Download className="h-3.5 w-3.5" strokeWidth={2.5} /> Export Data
-                          </button>
-                          <button className="flex items-center gap-2 rounded-lg bg-[#f8fafc] px-4 py-2 text-[0.85rem] font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                            <Settings className="h-3.5 w-3.5" strokeWidth={2.5} /> Settings
-                          </button>
                           <button className="flex items-center gap-2 rounded-md bg-[#6082f6] px-4 py-2 text-[0.85rem] font-bold text-white shadow-sm hover:bg-blue-600 transition-colors">
                             <Plus className="h-4 w-4" strokeWidth={3} /> Create Invoice
                           </button>
@@ -4516,7 +4441,7 @@ function App() {
                       </div>
 
                       {/* Summary Metrics Inline */}
-                      <div className="flex items-center gap-8 py-5 mt-5 border-y border-slate-100">
+                      <div className="flex items-center gap-8 py-3 mt-3 border-y border-slate-100">
                         <div className="flex items-center gap-2">
                           <span className="text-[0.85rem] font-bold text-slate-500">Total Outstanding:</span>
                           <span className="text-[1.05rem] font-black text-slate-800 tracking-tight">$247,850.00</span>
@@ -4536,7 +4461,7 @@ function App() {
                       </div>
 
                       {/* Filters */}
-                      <div className="flex items-center gap-3 mb-4 mt-5">
+                      <div className="flex items-center gap-3 mb-3 mt-3">
                         <button className="flex items-center justify-between w-32 rounded-full border border-slate-200 px-4 py-1.5 text-[0.8rem] font-bold text-slate-600 bg-white hover:bg-slate-50">
                           All Status <ChevronDown className="h-3 w-3 text-slate-400" strokeWidth={3} />
                         </button>
@@ -4580,7 +4505,7 @@ function App() {
                   </div>
 
                   {/* Table List (Scrollable) */}
-                  <div className="w-full px-6 lg:px-8 pt-2 pb-6 flex-1 flex flex-col min-h-0">
+                  <div className="w-full px-6 lg:px-8 pt-1 pb-4 flex-1 flex flex-col min-h-0">
                     <div className="w-full flex-1 overflow-y-auto dashboard-scrollbar pr-2 -mr-2">
                       {/* Table Body */}
                       <div className="flex flex-col">
@@ -4659,7 +4584,7 @@ function App() {
                       const endItem = Math.min(billingCurrentPage * itemsPerPage, totalLength);
 
                       return (
-                        <div className="mt-8 border-t border-slate-100 pt-6 px-2 flex items-center justify-between shrink-0">
+                        <div className="mt-4 border-t border-slate-100 pt-4 px-2 flex items-center justify-between shrink-0">
                           <p className="text-[0.85rem] text-slate-500 font-medium">Showing <span className="font-bold text-slate-800">{startItem}</span> to <span className="font-bold text-slate-800">{endItem}</span> of <span className="font-bold text-slate-800">{totalLength}</span> invoices</p>
                           <div className="flex items-center gap-1.5">
                             <button
@@ -5649,7 +5574,7 @@ function App() {
               <section className="dashboard-scrollbar h-[calc(100vh-85px)] overflow-y-auto px-4 py-5 sm:px-6 lg:px-8">
                 <div className="grid place-items-center rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
                   <h3 className="text-2xl font-bold tracking-tight text-slate-700">{sidebarItems.find((item) => item.key === activeSection)?.label}</h3>
-                  <p className="mt-2 text-sm font-semibold text-slate-500">This section will be connected next. Dashboard and Orders/Loads are fully ready.</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-500">This section will be connected next. Dashboard and Dispatch are fully ready.</p>
                 </div>
               </section>
             )}

@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const ROLES = [
- { id:"client", name:"INDUSTRIAL CLIENTS", specs:"BOOK · TRACK · PAY", quote:'"Complete transparency and zero delays for your logistics."', video:"/assets/hero/VIdeo.mp4" },
- { id:"driver", name:"TRANSPORT DRIVERS", specs:"ACCEPT JOBS · EARN · PROGRESS", quote:'"Take control of your routes and maximize your earnings."', video:"/assets/hero/VIdeo.mp4" },
- { id:"admin", name:"SYSTEM ADMINS", specs:"MONITOR · MANAGE · RESOLVE", quote:'"A bird\'s-eye view of every shipment and transaction."', video:"/assets/hero/VIdeo.mp4" },
+ { id:"client", name:"INDUSTRIAL CLIENTS", specs:"BOOK · TRACK · PAY", quote:'"Complete transparency and zero delays for your logistics."', video:"/assets/hero/site-video.mp4" },
+ { id:"driver", name:"TRANSPORT DRIVERS", specs:"ACCEPT JOBS · EARN · PROGRESS", quote:'"Take control of your routes and maximize your earnings."', video:"/assets/hero/site-video.mp4" },
+ { id:"admin", name:"SYSTEM ADMINS", specs:"MONITOR · MANAGE · RESOLVE", quote:'"A bird\'s-eye view of every shipment and transaction."', video:"/assets/hero/site-video.mp4" },
 ];
 
 export default function Collection() {
