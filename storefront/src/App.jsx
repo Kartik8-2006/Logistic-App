@@ -1,7 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 export default function App() {
+  const [authPage, setAuthPage] = useState(null); // null, 'login', or 'signup'
+
   useEffect(() => {
     // Meta Pixel Setup
     const pixelId = import.meta.env.VITE_META_PIXEL_ID;
@@ -17,9 +21,31 @@ export default function App() {
       fbq('init', pixelId);
       fbq('track', 'PageView');
     }
+
+    // Listen for login page navigation
+    const handleNavigation = (e) => {
+      if (e.detail?.page === 'login') {
+        setAuthPage('login');
+      } else if (e.detail?.page === 'signup') {
+        setAuthPage('signup');
+      }
+    };
+
+    window.addEventListener('navigate', handleNavigation);
+    return () => window.removeEventListener('navigate', handleNavigation);
   }, []);
 
+  const handleClose = () => setAuthPage(null);
+
+  if (authPage === 'login') {
+    return <Login onClose={handleClose} onNavigateToSignup={() => setAuthPage('signup')} />;
+  }
+
+  if (authPage === 'signup') {
+    return <Signup onClose={handleClose} onNavigateToLogin={() => setAuthPage('login')} />;
+  }
+
   return (
-    <Home />
+    <Home onNavigateToLogin={() => setAuthPage('login')} />
   );
 }

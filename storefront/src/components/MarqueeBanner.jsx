@@ -1,10 +1,19 @@
 "use client";
-const ITEMS = Array(3).fill(["🚚 INSTANT TRUCK BOOKING","⏱️ ZERO TRANSPORT DELAYS","📍 REAL-TIME TRACKING","💰 TRANSPARENT PRICING"]).flat();
+const ITEMS = Array(3).fill([
+  "DISPATCH BOARD",
+  "ROUTES AND TRACKING",
+  "PROOF OF DELIVERY",
+  "BILLING AND INVOICES",
+  "FLEET AND DRIVERS",
+  "LIVE BIDS",
+  "DRIVER WALLET",
+  "HOS AND FUEL ALERTS",
+]).flat();
 
 export default function MarqueeBanner({ variant = "dark" }) {
  const isDark = variant === "dark";
  return (
-   <div className={`w-full overflow-hidden py-3 ${isDark ? "bg-[#0A0A0A] border-y border-white/[0.06]" : "bg-accent-red"}`}>
+   <div className={`w-full overflow-hidden py-3 ${isDark ? "bg-[#0A0A0A] border-y border-white/6" : "bg-accent-red"}`}>
      <div className="flex w-max animate-marquee">
        {ITEMS.map((item, i) => (
          <span key={i} className={`inline-flex items-center gap-6 px-10 font-inter text-[12px] tracking-[3px] uppercase whitespace-nowrap ${isDark ? "text-text-secondary" : "text-white"}`}>

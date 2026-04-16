@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 
-export default function Navbar() {
+export default function Navbar({ onNavigateToLogin }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -12,10 +12,26 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  const handleSmoothScroll = (e, href) => {
+    e.preventDefault();
+    const targetId = href.replace("#", "");
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleLoginClick = (e) => {
+    e.preventDefault();
+    if (onNavigateToLogin) {
+      onNavigateToLogin();
+    }
+  };
+
   const links = [
-    { label: "PLATFORM ROLES", href: "#roles" },
-    { label: "WHY US", href: "#the-proof" },
-    { label: "BOOK A TRUCK", href: "#roles" },
+    { label: "WORKFLOW", href: "#workflow" },
+    { label: "LOGIN / SIGNUP", href: "#roles", onClick: handleLoginClick },
+    { label: "CAPABILITIES", href: "#capabilities" },
     { label: "FAQS", href: "#faq" },
   ];
 
@@ -28,12 +44,12 @@ export default function Navbar() {
         <a href="#top" className="group inline-flex flex-col items-start pt-1.5">
           <span className="font-bebas text-[18px] tracking-[8px] text-white leading-none uppercase">MANIFEST</span>
           <div className="w-full h-px bg-accent-red my-0.5 transition-transform duration-300 group-hover:scale-x-110 origin-left" />
-          <span className="font-bebas text-[18px] tracking-[8px] text-accent-red leading-none uppercase">LOGISTICS</span>
+          <span className="font-bebas text-[18px] tracking-[8px] text-accent-red leading-none uppercase">DRIVES</span>
         </a>
 
         <div className="hidden md:flex gap-6 items-center">
           {links.map((item, i) => (
-            <a key={i} href={item.href} className={`font-inter font-medium text-[13px] tracking-[2px] uppercase transition-colors duration-300 ${item.label === "BOOK A TRUCK" ? "text-white bg-accent-red px-4 py-2 hover:bg-[#FF1A1A]" : "text-text-secondary hover:text-white"}`}>
+            <a key={i} href={item.href} onClick={(e) => item.onClick ? item.onClick(e) : handleSmoothScroll(e, item.href)} className={`font-inter font-medium text-[13px] tracking-[2px] uppercase transition-colors duration-300 cursor-pointer ${item.label === "LOGIN / SIGNUP" ? "text-white bg-accent-red px-4 py-2 hover:bg-[#FF1A1A]" : "text-text-secondary hover:text-white"}`}>
               {item.label}
             </a>
           ))}
@@ -48,8 +64,15 @@ export default function Navbar() {
             className="fixed inset-0 z-1001 bg-background flex flex-col items-center justify-center gap-10">
             <button className="absolute top-6 right-6 text-white" onClick={() => setOpen(false)}><X className="w-8 h-8" /></button>
             {links.map((item, i) => (
-              <a key={i} href={item.href} onClick={() => setOpen(false)}
-                className={`font-bebas text-[40px] tracking-[4px] ${item.label.includes("BOOK") ? "text-accent-red" : "text-white"}`}>
+              <a key={i} href={item.href} onClick={(e) => {
+                if (item.onClick) {
+                  item.onClick(e);
+                } else {
+                  handleSmoothScroll(e, item.href);
+                }
+                setOpen(false);
+              }}
+                className={`font-bebas text-[40px] tracking-[4px] cursor-pointer ${item.label.includes("BOOK") ? "text-accent-red" : "text-white"}`}>
                 {item.label}
               </a>
             ))}

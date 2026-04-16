@@ -790,7 +790,10 @@ const fallbackData = {
 const sidebarItems = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'dispatch', label: 'Dispatch Board', icon: Grid2x2 },
+  { key: 'fleet', label: 'Fleet', icon: Truck },
+  { key: 'drivers', label: 'Drivers', icon: UserRound },
   { key: 'routes', label: 'Routes & Tracking', icon: Route },
+  { key: 'warehouses', label: 'Warehouses / Hubs', icon: Warehouse },
   { key: 'pod', label: 'Proof of Delivery', icon: FileCheck2 },
   { key: 'billing', label: 'Billing & Invoices', icon: ReceiptText },
   { key: 'reports', label: 'Reports', icon: BarChart3 },

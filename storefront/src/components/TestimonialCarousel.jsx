@@ -11,8 +11,8 @@ export default function TestimonialCarousel() {
  return (
    <section className="bg-white text-black py-24 px-6 md:px-[8vw]">
      <div className="flex flex-col items-center mb-16 text-center">
-       <div className="font-inter text-[11px] tracking-[5px] text-accent-red uppercase mb-6">THE PLATFORM</div>
-       <h2 className="font-bebas text-[48px] md:text-[72px] leading-none mb-6">REAL CLIENTS. REAL TRANSPORTERS.</h2>
+       <div className="font-inter text-[11px] tracking-[5px] text-accent-red uppercase mb-6">TEAM FEEDBACK</div>
+       <h2 className="font-bebas text-[48px] md:text-[72px] leading-none mb-6">OPS TEAMS USING THE STACK DAILY.</h2>
        <div className="flex items-center gap-3">
          <div className="flex gap-1">
            {[...Array(5)].map((_, i) => (

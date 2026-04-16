@@ -3,9 +3,48 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const SLIDES = [
-  { id: "connect", handle: "connect-industries", tab: "TRANSPORTATION", headline: "CONNECTING INDUSTRIES.", subline: "Find available trucks quickly and move your cargo without delays.", action: "REQUEST A TRUCK", videoPosition: "center center" },
-  { id: "track", handle: "real-time-track", tab: "LIVE TRACKING", headline: "TRACK EVERY METRE.", subline: "Experience poor real-time tracking no more. Get complete visibility into your shipments.", action: "TRACK SHIPMENT", videoPosition: "center center" },
-  { id: "price", handle: "transparent-price", tab: "TRANSPARENT PRICING", headline: "NO HIDDEN COSTS.", subline: "Dynamic pricing calculated purely on distance and load. Total transparency.", action: "VIEW PRICING", videoPosition: "center center" },
+  {
+    id: "connect",
+    handle: "connect-industries",
+    tab: "TRANSPORTATION",
+    headline: "CONNECTING INDUSTRIES.",
+    subline: "Find available trucks quickly and move your cargo without delays.",
+    details: [
+      "Smart load matching with rapid driver assignment.",
+      "Dispatch board for admin and operations control.",
+      "Driver dashboard for instant accept and live status updates.",
+    ],
+    action: "REQUEST A TRUCK",
+    videoPosition: "center center",
+  },
+  {
+    id: "track",
+    handle: "real-time-track",
+    tab: "LIVE TRACKING",
+    headline: "TRACK EVERY METRE.",
+    subline: "Experience poor real-time tracking no more. Get complete visibility into your shipments.",
+    details: [
+      "Real-time route map, ETA updates, and delay alerts.",
+      "Proof of Delivery with image and document verification.",
+      "Shared visibility across admin, operations, and driver teams.",
+    ],
+    action: "TRACK SHIPMENT",
+    videoPosition: "center center",
+  },
+  {
+    id: "price",
+    handle: "transparent-price",
+    tab: "TRANSPARENT PRICING",
+    headline: "NO HIDDEN COSTS.",
+    subline: "Dynamic pricing calculated purely on distance and load. Total transparency.",
+    details: [
+      "Distance and load based pricing logic with no surprise charges.",
+      "Automated billing, invoices, and settlement workflows.",
+      "Driver wallet with payout tracking and earnings history.",
+    ],
+    action: "VIEW PRICING",
+    videoPosition: "center center",
+  },
 ];
 
 export default function Hero() {
@@ -37,11 +76,20 @@ export default function Hero() {
         <button onClick={() => setActiveIdx(p => (p - 1 + SLIDES.length) % SLIDES.length)} className="pointer-events-auto p-3 rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white/50 hover:text-white backdrop-blur-md hidden md:block"><ChevronLeft size={32} strokeWidth={1.5} /></button>
         <button onClick={() => setActiveIdx(p => (p + 1) % SLIDES.length)} className="pointer-events-auto p-3 rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white/50 hover:text-white backdrop-blur-md hidden md:block"><ChevronRight size={32} strokeWidth={1.5} /></button>
       </div>
-      <div className="relative z-10 w-full px-6 md:pl-[4vw] xl:pl-[8vw] max-w-150 mt-12 md:mt-0">
+      <div className="relative z-10 w-full md:w-1/2 px-6 md:pl-[8vw] xl:pl-[10vw] mt-12 md:mt-0">
         <AnimatePresence mode="wait">
           <motion.div key={slide.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}>
+            <p className="font-inter text-[11px] tracking-[5px] text-accent-red uppercase mb-4">{slide.tab}</p>
             <h1 className="font-bebas text-[clamp(64px,10vw,120px)] text-white leading-[0.87] mb-6 uppercase">{slide.headline}</h1>
-            <p className="font-inter text-[16px] text-text-secondary max-w-90 leading-relaxed mb-10">{slide.subline}</p>
+            <p className="font-inter text-[16px] text-text-secondary max-w-full leading-relaxed mb-6">{slide.subline}</p>
+            <ul className="space-y-3 max-w-full mb-10">
+              {slide.details.map((detail) => (
+                <li key={detail} className="flex items-start gap-3">
+                  <span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent-red shrink-0" />
+                  <span className="font-inter text-[14px] text-white/80 leading-relaxed">{detail}</span>
+                </li>
+              ))}
+            </ul>
             <button
               onClick={() => { }}
               className="inline-block font-bebas text-[16px] tracking-[4px] px-10 py-4 uppercase text-white bg-accent-red hover:bg-red-700 transition-colors"

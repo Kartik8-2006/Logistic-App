@@ -4,12 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus } from "lucide-react";
 
 const FAQ_ITEMS = [
- { question: "HOW FAST CAN I BOOK A TRUCK?", answer: "Instantly. Enter your pickup, dropoff, and load details, and the system automatically matches you with the nearest driver." },
- { question: "HOW DOES PRICING WORK?", answer: "We use an algorithm to calculate dynamic pricing based purely on distance, load weight, and current fleet availability. No arbitrary hidden fees." },
- { question: "CAN I TRACK MY SHIPMENT IN REAL-TIME?", answer: "Yes. From the moment the driver accepts the job, you receive live GPS tracking until the cargo reaches its destination." },
- { question: "HOW DO DRIVERS GET PAID?", answer: "Earnings are calculated securely via our built-in wallet system upon delivery completion. Drivers can track their earnings live." },
- { question: "DO YOU HANDLE DISPUTES?", answer: "Our admin system handles all disputes, user management, and operational hurdles to ensure your logistics run without a hitch." },
- { question: "CAN MY BUSINESS SCALE WITH THIS?", answer: "Absolutely. Our platform is built for enterprises and independent contractors alike, handling anything from single pallets to major industrial freights." },
+ { question: "CAN OPERATIONS TRACK LOADS BY STATUS?", answer: "Yes. Dispatch Board and Routes & Tracking support states like Assigned, Loading, In Transit, Delivered, Unassigned, and delay-focused route filters." },
+ { question: "HOW DOES POD APPROVAL AFFECT PAYOUT?", answer: "Proof of Delivery workflows are linked with billing and driver wallet settlements. Pending or rejected POD can hold payout until approved evidence is uploaded." },
+ { question: "DO DRIVERS GET LOADS ONLY BY ASSIGNMENT?", answer: "No. Driver Dashboard supports both direct load assignment and Live Bids so drivers can compete for eligible lanes during open windows." },
+ { question: "CAN ADMINS CONTROL FLEET AND HUB ACCESS?", answer: "Yes. Admin Dashboard manages Fleet, Drivers, Warehouses/Hubs, and settings-level controls for access and operational policy." },
+ { question: "IS EARNINGS VISIBILITY AVAILABLE FOR DRIVERS?", answer: "Yes. Wallet module provides payment history, payout methods, pending settlements, and earning summaries tied to completed delivery records." },
+ { question: "WILL THIS FIT A GROWING MULTI-TEAM LOGISTICS BUSINESS?", answer: "That is exactly the use case. The platform is designed so admin, operations, and driver teams work in dedicated views over the same live data layer." },
 ];
 
 export default function FAQ() {
@@ -22,7 +22,7 @@ export default function FAQ() {
        </h2>
        <div className="space-y-4">
          {FAQ_ITEMS.map((item, i) => (
-           <div key={i} className="border border-white/5 bg-white/[0.02] overflow-hidden">
+           <div key={i} className="border border-white/5 bg-white/2 overflow-hidden">
              <button onClick={() => setOpenIdx(openIdx === i ? null : i)} className="w-full flex items-center justify-between p-6 md:p-8 text-left">
                <span className="font-bebas text-[20px] md:text-[24px] tracking-[2px]">{item.question}</span>
                <motion.div animate={{ rotate: openIdx === i ? 45 : 0 }} transition={{ duration: 0.3 }}>

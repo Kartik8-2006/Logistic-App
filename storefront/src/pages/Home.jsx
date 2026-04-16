@@ -12,10 +12,10 @@ import Footer from "@/components/Footer";
 import HowItWorks from "@/components/HowItWorks";
 import Features from "@/components/Features";
 
-export default function Home() {
+export default function Home({ onNavigateToLogin }) {
   return (
     <main id="top" className="min-h-screen bg-background selection:bg-accent-red selection:text-white">
-      <Navbar />
+      <Navbar onNavigateToLogin={onNavigateToLogin} />
       <div className="pt-16"><MarqueeBanner variant="dark" /></div>
       <Hero />
       <SwipeManifesto />
