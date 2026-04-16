@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import truckImage from "../assets/auth/caleb-ruiter-EmEQ6kK_5P0-unsplash.jpg";
 
 export default function Login({ onClose, onNavigateToSignup }) {
   const [isSignup, setIsSignup] = useState(false);
@@ -56,7 +57,7 @@ export default function Login({ onClose, onNavigateToSignup }) {
 
         {/* Truck Image */}
         <img 
-          src="https://images.unsplash.com/photo-1577720643272-265f434f8fef?w=1200&h=1200&fit=crop" 
+          src={truckImage} 
           alt="Logistics Truck"
           className="absolute inset-0 w-full h-full object-cover"
         />

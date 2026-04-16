@@ -3102,7 +3102,7 @@ function App() {
                         {/* Left: Multi-Branch Management */}
                         <div className="space-y-6">
                           <h4 className="text-[0.9rem] font-bold text-slate-800">Multi-Branch Management</h4>
-                          
+
                           <div className="rounded-xl border border-slate-100 bg-[#fafafb]/40 p-2 shadow-sm">
                             {/* Headquarters - Chicago */}
                             <div className="flex items-center justify-between p-3">
@@ -3114,7 +3114,7 @@ function App() {
                               </div>
                               <span className="rounded-md bg-emerald-50 px-2 py-1 text-[0.7rem] font-bold text-emerald-600">Active</span>
                             </div>
-                            
+
                             <div className="ml-5 border-l-2 border-slate-100 pl-6 space-y-2 py-2">
                               {/* Branch - Dallas */}
                               <div className="flex items-center justify-between py-1">
@@ -3132,7 +3132,7 @@ function App() {
                                 <span className="rounded-md bg-amber-50 px-2 py-1 text-[0.7rem] font-bold text-amber-600">Pending</span>
                               </div>
                             </div>
-                            
+
                             <button className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold text-blue-600 hover:text-blue-700 mt-2 transition-colors">
                               <Plus className="h-4 w-4" /> Add Branch
                             </button>
@@ -3435,7 +3435,7 @@ function App() {
                         <div>
                           <div className="flex flex-col gap-6">
                             <h4 className="text-[0.95rem] font-bold text-slate-800">Alert Sensitivity & Channels</h4>
-                            
+
                             {/* Sensitivity Level */}
                             <div>
                               <p className="mb-4 text-[0.85rem] font-bold text-slate-800">Sensitivity Level</p>
