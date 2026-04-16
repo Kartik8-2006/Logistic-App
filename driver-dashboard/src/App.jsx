@@ -961,6 +961,7 @@ function App() {
     equipment: 'All Equipment',
     region: 'All Regions',
   })
+  const [linkedLiveBids, setLinkedLiveBids] = useState([])
   const [watchedBidIds, setWatchedBidIds] = useState([])
   const [manualBids, setManualBids] = useState([])
   const [portalBidSeedTime] = useState(() => Date.now())
@@ -976,7 +977,7 @@ function App() {
   const [selectedRouteId, setSelectedRouteId] = useState(null)
   const [podWorkflowRecords, setPodWorkflowRecords] = useState(() => fallbackData.podWorkflowRecords ?? [])
   const [podSelectedRecordId, setPodSelectedRecordId] = useState(() => fallbackData.podWorkflowRecords?.[0]?.id ?? null)
-  const [podViewMode, setPodViewMode] = useState('Workflow')
+  const podViewMode = 'Workflow'
   const [podStatusFilter, setPodStatusFilter] = useState('All')
   const [podSelectedMonth, setPodSelectedMonth] = useState('all')
 
@@ -1213,6 +1214,7 @@ function App() {
   const dashboardMapRef = useRef(null)
   const previousDriverLivePointRef = useRef(null)
   const bidSheetInputRef = useRef(null)
+  const previousLinkedBidCountRef = useRef(0)
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -1231,6 +1233,85 @@ function App() {
     }
 
     loadDashboard()
+  }, [])
+
+  useEffect(() => {
+    const normalizeLinkedBid = (bid, index) => {
+      const safeAskRate = Number.isFinite(Number(bid.askRate)) ? Number(bid.askRate) : 1200
+      const safeLaneMiles = Number.isFinite(Number(bid.laneMiles)) ? Number(bid.laneMiles) : 420
+      const safeFloorRate = Number.isFinite(Number(bid.floorRate)) ? Number(bid.floorRate) : Math.round(safeAskRate * 0.9)
+      const safeBiddingStart = Number.isFinite(Number(bid.biddingStartAt)) ? Number(bid.biddingStartAt) : Date.now() + (30 * 1000)
+      const safeBiddingEnd = Number.isFinite(Number(bid.biddingEndAt)) ? Number(bid.biddingEndAt) : safeBiddingStart + (2 * 60 * 60 * 1000)
+
+      return {
+        id: bid.id || `BID-LINKED-${index + 1}`,
+        sourceLoadId: bid.sourceLoadId || bid.id || `LOAD-LINKED-${index + 1}`,
+        customerName: bid.customerName || 'Company Manager',
+        lane: bid.lane || `${bid.origin || 'Source'} -> ${bid.destination || 'Destination'}`,
+        origin: bid.origin || 'Source',
+        destination: bid.destination || 'Destination',
+        pickupWindow: bid.pickupWindow || '--',
+        deliveryWindow: bid.deliveryWindow || '--',
+        laneMiles: safeLaneMiles,
+        askRate: safeAskRate,
+        floorRate: safeFloorRate,
+        rpm: safeLaneMiles > 0 ? (safeAskRate / safeLaneMiles) : 0,
+        urgency: bid.urgency || 'Medium',
+        bidType: bid.bidType || 'Spot',
+        equipment: bid.equipment || 'Dry Van',
+        region: bid.region || 'Region',
+        portalPublishedAt: Number.isFinite(Number(bid.portalPublishedAt)) ? Number(bid.portalPublishedAt) : Date.now(),
+        biddingStartAt: safeBiddingStart,
+        biddingEndAt: safeBiddingEnd,
+        score: Number.isFinite(Number(bid.score)) ? Number(bid.score) : 82,
+        weightLbs: Number.isFinite(Number(bid.weightLbs)) ? Number(bid.weightLbs) : 12000,
+        dimensions: bid.dimensions || '53 ft x 8.5 ft x 9 ft',
+        lengthFt: Number.isFinite(Number(bid.lengthFt)) ? Number(bid.lengthFt) : 53,
+        widthFt: Number.isFinite(Number(bid.widthFt)) ? Number(bid.widthFt) : 8.5,
+        heightFt: Number.isFinite(Number(bid.heightFt)) ? Number(bid.heightFt) : 9,
+        palletCount: Number.isFinite(Number(bid.palletCount)) ? Number(bid.palletCount) : 10,
+        pieceCount: Number.isFinite(Number(bid.pieceCount)) ? Number(bid.pieceCount) : 120,
+        commodity: bid.commodity || 'General Merchandise',
+        handlingNotes: bid.handlingNotes || 'Company manager instructions available in bid details.',
+        requiresHazmat: Boolean(bid.requiresHazmat),
+        temperatureControl: Boolean(bid.temperatureControl),
+        requiresTeamDriver: Boolean(bid.requiresTeamDriver),
+        loadPhotos: Array.isArray(bid.loadPhotos) ? bid.loadPhotos : [],
+        note: bid.note || 'New linked load posted by company manager.',
+      }
+    }
+
+    const loadLinkedBids = async () => {
+      try {
+        const response = await fetch('/api/live-bids')
+        if (!response.ok) {
+          return
+        }
+
+        const payload = await response.json()
+        const bids = Array.isArray(payload?.bids) ? payload.bids.map(normalizeLinkedBid) : []
+
+        const previousCount = previousLinkedBidCountRef.current
+        const nextCount = bids.length
+
+        if (previousCount > 0 && nextCount > previousCount) {
+          const newestBid = bids[0]
+          setBidActionMessage(`New load from manager: ${newestBid.lane} | Ask ${formatCurrencyValue(newestBid.askRate)}`)
+        }
+
+        previousLinkedBidCountRef.current = nextCount
+        setLinkedLiveBids(bids)
+      } catch {
+        // Keep driver dashboard usable even if linked bid sync fails.
+      }
+    }
+
+    loadLinkedBids()
+    const pollTimer = setInterval(loadLinkedBids, 10000)
+
+    return () => {
+      clearInterval(pollTimer)
+    }
   }, [])
 
   useEffect(() => {
@@ -2071,8 +2152,8 @@ function App() {
       }
     })
 
-    return [...manualBids, ...generatedBids]
-  }, [activeDispatchMiles, activeDriverDispatch.deliveryDate, activeDriverDispatch.deliveryTime, activeDriverDispatch.loadType, activeDriverDispatch.pickupDate, activeDriverDispatch.pickupTime, manualBids, orders, portalBidSeedTime])
+    return [...manualBids, ...linkedLiveBids, ...generatedBids]
+  }, [activeDispatchMiles, activeDriverDispatch.deliveryDate, activeDriverDispatch.deliveryTime, activeDriverDispatch.loadType, activeDriverDispatch.pickupDate, activeDriverDispatch.pickupTime, linkedLiveBids, manualBids, orders, portalBidSeedTime])
 
   const bidTypeOptions = useMemo(() => ['All Types', ...new Set(liveBidRows.map((bid) => bid.bidType))], [liveBidRows])
   const bidUrgencyOptions = ['All Urgency', 'High', 'Medium', 'Low']
@@ -4195,23 +4276,6 @@ function App() {
                   <article className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
                     <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
                       <h2 className="text-[2rem] font-bold tracking-tight text-slate-800">My Loads</h2>
-
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700"
-                        >
-                          <FileText className="h-4 w-4" />
-                          Save Draft
-                        </button>
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white"
-                        >
-                          <Upload className="h-4 w-4" />
-                          Submit POD
-                        </button>
-                      </div>
                     </div>
 
                     <div className="shrink-0 flex flex-wrap items-center gap-4 border-b border-slate-200 px-5 py-3">
@@ -4855,16 +4919,6 @@ function App() {
                                 </p>
                               </section>
 
-                              <div className="space-y-3">
-                                <button type="button" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-3 text-sm font-bold text-white">
-                                  Submit POD to Company
-                                  <ArrowRight className="h-4 w-4" />
-                                </button>
-                                <button type="button" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-                                  Save POD Draft
-                                </button>
-                              </div>
-
                               <section className="rounded-xl border-l-4 border-amber-400 bg-amber-50 p-4">
                                 <p className="flex items-start gap-2 text-[0.76rem] font-semibold leading-relaxed text-amber-800">
                                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -4925,21 +4979,6 @@ function App() {
                       <p className="mt-1 text-[0.82rem] font-semibold text-slate-500">Portal-scheduled manual bidding. Open panel manually anytime to monitor countdown; bidding auto-closes after 2 min.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <input
-                        ref={bidSheetInputRef}
-                        type="file"
-                        accept=".csv,.xlsx,.xls,.json"
-                        onChange={handleBidSheetSelection}
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleImportBidSheet}
-                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
-                      >
-                        <Download className="h-4 w-4" />
-                        Import Bid Sheet
-                      </button>
                       <button
                         type="button"
                         onClick={handleCreateManualBid}
@@ -6728,24 +6767,10 @@ function App() {
                   <div className="shrink-0 border-b border-slate-200/70 bg-white px-6 pb-5 pt-6 lg:px-8">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
-                        <h2 className="text-[1.8rem] font-bold tracking-tight text-slate-900">Proof of Delivery Workflow</h2>
+                        <h2 className="text-[1.8rem] font-bold tracking-tight text-slate-900">Proof of Delivery</h2>
                         <p className="mt-1 text-[0.92rem] font-medium text-slate-500">
                           Upload shipment photos and signed POD letter after delivery. POD status is tracked as Pending, Accepted, or Rejected.
                         </p>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-1.5">
-                        {['Workflow', 'Logs'].map((mode) => (
-                          <button
-                            key={mode}
-                            onClick={() => setPodViewMode(mode)}
-                            className={`rounded-lg px-4 py-2 text-[0.8rem] font-bold transition ${podViewMode === mode
-                              ? 'bg-white text-slate-900 shadow-sm'
-                              : 'text-slate-500 hover:text-slate-700'
-                              }`}
-                          >
-                            {mode}
-                          </button>
-                        ))}
                       </div>
                     </div>
 
@@ -6801,7 +6826,7 @@ function App() {
                       </label>
 
                       <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-[0.8rem] font-semibold text-slate-600">
-                        Showing {podFilteredRecords.length} logs in this view, total evidence files {monthlyUploadsCount}
+                        Showing {podFilteredRecords.length} records in this view, total evidence files {monthlyUploadsCount}
                       </div>
                     </div>
                   </div>
@@ -6812,7 +6837,7 @@ function App() {
                       {podViewMode === 'Workflow' ? (
                         <div className="flex h-full min-h-0 flex-col">
                           <div className="border-b border-slate-100 px-5 py-4">
-                            <h3 className="text-[1.02rem] font-bold text-slate-900">Destination Workflow Queue</h3>
+                            <h3 className="text-[1.02rem] font-bold text-slate-900">Destination Queue</h3>
                             <p className="mt-1 text-[0.8rem] font-medium text-slate-500">After delivery, upload shipment photos and POD letter images. Operations updates the final review status.</p>
                           </div>
                           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 dashboard-scrollbar">
@@ -7197,16 +7222,6 @@ function App() {
                           <div>
                             <h2 className="text-[2rem] font-bold tracking-tight text-slate-800">Earnings and Wallet</h2>
                             <p className="mt-0.5 text-[0.86rem] font-semibold text-slate-500">Track driver earnings, pending payouts, and payment history for completed loads.</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
-                              <Download className="h-4 w-4" />
-                              Export Statement
-                            </button>
-                            <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
-                              <Wallet className="h-4 w-4" />
-                              Request Payout
-                            </button>
                           </div>
                         </div>
 

@@ -1,0 +1,48 @@
+{
+  "bids": [
+    {
+      "id": "BID-CM-1776358392080",
+      "sourceLoadId": "LOAD-CM-1776358392080",
+      "customerName": "Miguel",
+      "lane": "Hobbs -> houston",
+      "origin": "Hobbs",
+      "destination": "houston",
+      "pickupWindow": "2026-04-17",
+      "deliveryWindow": "2026-04-20",
+      "laneMiles": 420,
+      "askRate": 2000,
+      "floorRate": 2300,
+      "rpm": 4.761904761904762,
+      "urgency": "Medium",
+      "bidType": "Spot",
+      "equipment": "Dry Van",
+      "region": "houston",
+      "portalPublishedAt": 1776358392078,
+      "biddingStartAt": 1776358422078,
+      "biddingEndAt": 1776365622078,
+      "score": 82,
+      "weightLbs": 36376,
+      "dimensions": "20",
+      "lengthFt": 53,
+      "widthFt": 8.5,
+      "heightFt": 9,
+      "palletCount": 50,
+      "pieceCount": 600,
+      "commodity": "electronic",
+      "handlingNotes": "Follow shipment instructions from company manager.",
+      "requiresHazmat": false,
+      "temperatureControl": true,
+      "requiresTeamDriver": false,
+      "loadPhotos": [],
+      "note": "New company load posted. Type: Full Truckload (FTL) | Payment: Net 15",
+      "managerInput": {
+        "companyManager": "Miguel",
+        "loadType": "Full Truckload (FTL)",
+        "insuranceValue": 120000,
+        "temperatureRequirement": "20-30",
+        "paymentTerms": "Net 15"
+      },
+      "createdAt": "2026-04-16T16:53:12.095Z"
+    }
+  ]
+}

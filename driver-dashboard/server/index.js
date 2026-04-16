@@ -2,6 +2,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
 import { dashboardData } from './dashboardData.js'
+import { listSharedLiveBids } from './sharedState.js'
 
 dotenv.config()
 
@@ -25,6 +26,13 @@ app.get('/api/health', (_req, res) => {
 
 app.get('/api/dashboard', (_req, res) => {
   res.json(dashboardData)
+})
+
+app.get('/api/live-bids', (_req, res) => {
+  res.json({
+    ok: true,
+    bids: listSharedLiveBids(),
+  })
 })
 
 app.post('/api/driver-location', (req, res) => {

@@ -459,8 +459,6 @@ export const dashboardData = {
   quickActions: [
     { id: 'create-load', label: 'Create Load', icon: 'create', style: 'bg-blue-500 hover:bg-blue-600' },
     { id: 'assign-driver', label: 'Assign Driver', icon: 'assign', style: 'bg-emerald-500 hover:bg-emerald-600' },
-    { id: 'generate-invoice', label: 'Generate Invoice', icon: 'invoice', style: 'bg-violet-600 hover:bg-violet-700' },
-    { id: 'plan-route', label: 'Plan Route', icon: 'route', style: 'bg-orange-500 hover:bg-orange-600' },
   ],
   fleetSummary: [
     { id: 'total', label: 'Total Vehicles', value: '127', textTone: 'text-blue-700', labelTone: 'text-blue-600/80', icon: 'Car', iconTone: 'bg-blue-500', bgScale: 'bg-blue-50 border-blue-100' },

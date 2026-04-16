@@ -510,8 +510,6 @@ const fallbackData = {
   quickActions: [
     { id: 'create-load', label: 'Create Load', icon: 'create', style: 'bg-blue-500 hover:bg-blue-600' },
     { id: 'assign-driver', label: 'Assign Driver', icon: 'assign', style: 'bg-emerald-500 hover:bg-emerald-600' },
-    { id: 'generate-invoice', label: 'Generate Invoice', icon: 'invoice', style: 'bg-violet-600 hover:bg-violet-700' },
-    { id: 'plan-route', label: 'Plan Route', icon: 'route', style: 'bg-orange-500 hover:bg-orange-600' },
   ],
   fleetSummary: [
     { id: 'total', label: 'Total Vehicles', value: '127', textTone: 'text-blue-700', labelTone: 'text-blue-600/80', icon: 'Car', iconTone: 'bg-blue-500', bgScale: 'bg-blue-50 border-blue-100' },
@@ -791,9 +789,7 @@ const sidebarItems = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'dispatch', label: 'Dispatch Board', icon: Grid2x2 },
   { key: 'fleet', label: 'Fleet', icon: Truck },
-  { key: 'drivers', label: 'Drivers', icon: UserRound },
   { key: 'routes', label: 'Routes & Tracking', icon: Route },
-  { key: 'warehouses', label: 'Warehouses / Hubs', icon: Warehouse },
   { key: 'pod', label: 'Proof of Delivery', icon: FileCheck2 },
   { key: 'billing', label: 'Billing & Invoices', icon: ReceiptText },
   { key: 'reports', label: 'Reports', icon: BarChart3 },
@@ -861,6 +857,27 @@ const quickActionIcons = {
   route: Map,
 }
 
+const createLoadFormDefaults = {
+  companyManager: 'FleetFlow Logistics',
+  sourceLocation: '',
+  destinationLocation: '',
+  loadType: 'Full Truckload (FTL)',
+  equipmentType: 'Dry Van',
+  loadSize: '',
+  totalWeight: '',
+  commodity: '',
+  packageCount: '',
+  basePrice: '',
+  bidBasePrice: '',
+  insuranceValue: '',
+  paymentTerms: 'Net 15',
+  temperatureRequirement: '',
+  loadPhotos: [],
+  shipmentInvoice: null,
+  importantNote: '',
+  specialInstructions: '',
+}
+
 const orderDetailTabs = [
   { key: 'overview', label: 'Overview' },
   { key: 'stops', label: 'Stops' },
@@ -920,6 +937,8 @@ function App() {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null)
   const [billingCurrentPage, setBillingCurrentPage] = useState(1)
   const [selectedReportId, setSelectedReportId] = useState(null)
+  const [isCreateLoadPanelOpen, setIsCreateLoadPanelOpen] = useState(false)
+  const [createLoadForm, setCreateLoadForm] = useState(() => ({ ...createLoadFormDefaults }))
 
   const [routeFilters, setRouteFilters] = useState({
   })
@@ -957,6 +976,18 @@ function App() {
 
     loadDashboard()
   }, [])
+
+  useEffect(() => {
+    if (activeSection === 'drivers' || activeSection === 'warehouses') {
+      setActiveSection('dashboard')
+    }
+  }, [activeSection])
+
+  useEffect(() => {
+    if (activeSection !== 'dashboard' && activeSection !== 'dispatch' && isCreateLoadPanelOpen) {
+      setIsCreateLoadPanelOpen(false)
+    }
+  }, [activeSection, isCreateLoadPanelOpen])
 
   const metrics = useMemo(() => dashboardData.metrics ?? [], [dashboardData.metrics])
   const vehicles = useMemo(() => dashboardData.vehicles ?? [], [dashboardData.vehicles])
@@ -1234,6 +1265,62 @@ function App() {
     }
   }
 
+  const handleCreateLoadFieldChange = (field, value) => {
+    setCreateLoadForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleCreateLoadFileChange = (field, file) => {
+    setCreateLoadForm((prev) => ({
+      ...prev,
+      [field]: file,
+    }))
+  }
+
+  const handleCreateLoadPhotosChange = (files) => {
+    setCreateLoadForm((prev) => ({
+      ...prev,
+      loadPhotos: Array.from(files ?? []),
+    }))
+  }
+
+  const createLoadPhotoPreviews = useMemo(
+    () => createLoadForm.loadPhotos.map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+    })),
+    [createLoadForm.loadPhotos],
+  )
+
+  useEffect(() => () => {
+    createLoadPhotoPreviews.forEach((preview) => {
+      URL.revokeObjectURL(preview.url)
+    })
+  }, [createLoadPhotoPreviews])
+
+  const openCreateLoadPanel = () => {
+    setIsCreateLoadPanelOpen(true)
+  }
+
+  const handleQuickActionClick = (actionId) => {
+    if (actionId === 'create-load') {
+      openCreateLoadPanel()
+      return
+    }
+
+    if (actionId === 'assign-driver') {
+      setActiveSection('dispatch')
+    }
+  }
+
+  const handleCreateLoadSubmit = (event) => {
+    event.preventDefault()
+    setIsCreateLoadPanelOpen(false)
+    setCreateLoadForm({ ...createLoadFormDefaults })
+  }
+
   return (
     <LoadScript googleMapsApiKey={mapApiKey}>
       <div className="h-screen w-full bg-slate-50 text-slate-900">
@@ -1461,6 +1548,7 @@ function App() {
                           <button
                             key={action.id}
                             type="button"
+                            onClick={() => handleQuickActionClick(action.id)}
                             className={`inline-flex min-h-[72px] items-center justify-center gap-2.5 rounded-xl px-4 py-3 text-[0.95rem] font-bold text-white shadow-md transition ${action.style}`}
                           >
                             <Icon className="h-4 w-4" />
@@ -1486,13 +1574,7 @@ function App() {
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600"
-                        >
-                          <UserPlus className="h-4 w-4" />
-                          Auto-Assign
-                        </button>
-                        <button
-                          type="button"
+                          onClick={openCreateLoadPanel}
                           className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white"
                         >
                           <Plus className="h-4 w-4" />
@@ -2136,20 +2218,6 @@ function App() {
                     <div>
                       <h2 className="text-2xl font-bold tracking-tight text-slate-800">Fleet - Trucks & Trailers Management</h2>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
-                        <Download className="h-4 w-4" />
-                        Import Fleet Data
-                      </button>
-                      <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 transition-colors">
-                        <Wrench className="h-4 w-4" />
-                        Schedule Maintenance
-                      </button>
-                      <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 transition-colors">
-                        <Plus className="h-4 w-4" />
-                        Add Vehicle
-                      </button>
-                    </div>
                   </div>
 
                   {/* KPI Cards */}
@@ -2780,16 +2848,6 @@ function App() {
                 <div className="flex-none bg-white border-b border-slate-200">
                   <div className="flex items-center justify-between px-6 py-4 lg:px-8">
                     <h2 className="text-[2rem] font-bold tracking-tight text-slate-800">Routes & Tracking</h2>
-                    <div className="flex items-center gap-3">
-                      <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors">
-                        <Download className="h-4 w-4 text-slate-400" />
-                        Export Data
-                      </button>
-                      <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors">
-                        <Route className="h-4 w-4" />
-                        Route Optimization
-                      </button>
-                    </div>
                   </div>
 
                   {/* KPI Cards */}
@@ -4163,9 +4221,6 @@ function App() {
                           <button className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-[0.9rem] font-bold text-slate-700 shadow-[0_1px_4px_-2px_rgba(0,0,0,0.1)] transition hover:bg-slate-50 hover:text-slate-900">
                             <Download className="h-[15px] w-[15px] text-slate-400" strokeWidth={2.5} /> Export Report
                           </button>
-                          <button className="flex items-center gap-2.5 rounded-xl bg-blue-600 px-5 py-2.5 text-[0.9rem] font-bold text-white shadow-[0_4px_12px_-4px_rgba(37,99,235,0.4)] transition hover:bg-blue-700">
-                            <Upload className="h-[15px] w-[15px]" strokeWidth={2.5} /> Bulk Upload
-                          </button>
                         </div>
                       </div>
 
@@ -4435,11 +4490,6 @@ function App() {
                         <div>
                           <h2 className="text-[1.7rem] font-bold tracking-tight text-slate-900 uppercase">BILLING & INVOICES</h2>
                           <p className="text-[0.95rem] font-medium text-slate-500 mt-1">Manage invoices, track payments, and handle customer billing</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button className="flex items-center gap-2 rounded-md bg-[#6082f6] px-4 py-2 text-[0.85rem] font-bold text-white shadow-sm hover:bg-blue-600 transition-colors">
-                            <Plus className="h-4 w-4" strokeWidth={3} /> Create Invoice
-                          </button>
                         </div>
                       </div>
 
@@ -4859,14 +4909,6 @@ function App() {
                         <div>
                           <h2 className="text-[1.7rem] font-bold tracking-tight text-slate-900 uppercase">REPORTS</h2>
                           <p className="text-[0.95rem] font-medium text-slate-500 mt-1">Reports module with chart-first design for operational and financial analysis</p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button className="flex items-center gap-2 rounded-lg bg-[#f8fafc] border border-slate-200 px-4 py-2 text-[0.85rem] font-bold text-slate-600 hover:bg-slate-100 transition-colors">
-                            <Download className="h-3.5 w-3.5" strokeWidth={2.5} /> Bulk Export
-                          </button>
-                          <button className="flex items-center gap-2 rounded-md bg-[#6082f6] px-4 py-2 text-[0.85rem] font-bold text-white shadow-sm hover:bg-blue-600 transition-colors">
-                            <Plus className="h-4 w-4" strokeWidth={3} /> Custom Report
-                          </button>
                         </div>
                       </div>
 
@@ -5581,6 +5623,321 @@ function App() {
                 </div>
               </section>
             )}
+
+            {isCreateLoadPanelOpen ? (
+              <div
+                className="fixed left-0 right-0 bottom-0 top-[72px] z-[90] bg-slate-900/5"
+                onClick={() => setIsCreateLoadPanelOpen(false)}
+              />
+            ) : null}
+
+            <aside
+              className={`fixed right-0 top-[72px] z-[100] h-[calc(100vh-72px)] w-full max-w-[500px] transform border-l border-slate-200 bg-white shadow-[0_0_35px_rgba(15,23,42,0.12)] transition-transform duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] flex flex-col ${isCreateLoadPanelOpen ? 'translate-x-0' : 'translate-x-full pointer-events-none'
+                }`}
+            >
+              <form onSubmit={handleCreateLoadSubmit} className="flex h-full flex-col">
+                <div className="shrink-0 flex items-center justify-between border-b border-slate-800 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-900 px-4 py-3.5 text-white">
+                  <div>
+                    <p className="text-[0.64rem] font-bold uppercase tracking-[0.1em] text-blue-200">Load Creation</p>
+                    <h3 className="mt-1 text-[1rem] font-black tracking-tight">Create New Load</h3>
+                    <p className="mt-1 text-[0.76rem] font-semibold text-slate-200">Structured shipment request panel for dispatch-ready bidding.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateLoadPanelOpen(false)}
+                    className="rounded-full p-2 text-slate-200 transition-colors hover:bg-white/15 hover:text-white"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <div className="dashboard-scrollbar min-h-0 flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 via-white to-blue-50/50 p-4">
+                  <div className="space-y-6">
+                    <section className="space-y-3">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">Company & Lane</h4>
+                        <p className="mt-1 text-[0.72rem] font-semibold text-slate-500">Capture ownership and route lane for dispatch visibility.</p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="sm:col-span-2">
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Company Name</label>
+                          <input
+                            type="text"
+                            value={createLoadForm.companyManager}
+                            onChange={(event) => handleCreateLoadFieldChange('companyManager', event.target.value)}
+                            placeholder="Enter company name"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Source Location</label>
+                          <input
+                            type="text"
+                            value={createLoadForm.sourceLocation}
+                            onChange={(event) => handleCreateLoadFieldChange('sourceLocation', event.target.value)}
+                            placeholder="Pickup city / terminal"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Destination Location</label>
+                          <input
+                            type="text"
+                            value={createLoadForm.destinationLocation}
+                            onChange={(event) => handleCreateLoadFieldChange('destinationLocation', event.target.value)}
+                            placeholder="Drop city / terminal"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="space-y-3 border-t border-slate-200/80 pt-4">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">Shipment Details</h4>
+                        <p className="mt-1 text-[0.72rem] font-semibold text-slate-500">Define load profile, packaging, and handling constraints.</p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Load Type</label>
+                          <select
+                            value={createLoadForm.loadType}
+                            onChange={(event) => handleCreateLoadFieldChange('loadType', event.target.value)}
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          >
+                            <option>Full Truckload (FTL)</option>
+                            <option>Less than Truckload (LTL)</option>
+                            <option>Partial</option>
+                            <option>Express</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Equipment Type</label>
+                          <select
+                            value={createLoadForm.equipmentType}
+                            onChange={(event) => handleCreateLoadFieldChange('equipmentType', event.target.value)}
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          >
+                            <option>Dry Van</option>
+                            <option>Reefer</option>
+                            <option>Flatbed</option>
+                            <option>Container</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Load Size</label>
+                          <input
+                            type="text"
+                            value={createLoadForm.loadSize}
+                            onChange={(event) => handleCreateLoadFieldChange('loadSize', event.target.value)}
+                            placeholder="e.g. 28 pallets"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Weight (kg)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={createLoadForm.totalWeight}
+                            onChange={(event) => handleCreateLoadFieldChange('totalWeight', event.target.value)}
+                            placeholder="e.g. 16500"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Commodity / Shipment Type</label>
+                          <input
+                            type="text"
+                            value={createLoadForm.commodity}
+                            onChange={(event) => handleCreateLoadFieldChange('commodity', event.target.value)}
+                            placeholder="e.g. Electronics"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Number of Packages</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={createLoadForm.packageCount}
+                            onChange={(event) => handleCreateLoadFieldChange('packageCount', event.target.value)}
+                            placeholder="e.g. 240"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Temperature Requirement</label>
+                          <input
+                            type="text"
+                            value={createLoadForm.temperatureRequirement}
+                            onChange={(event) => handleCreateLoadFieldChange('temperatureRequirement', event.target.value)}
+                            placeholder="e.g. 2C to 8C"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Insurance Value ($)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={createLoadForm.insuranceValue}
+                            onChange={(event) => handleCreateLoadFieldChange('insuranceValue', event.target.value)}
+                            placeholder="e.g. 120000"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          />
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="space-y-3 border-t border-slate-200/80 pt-4">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">Bid & Pricing</h4>
+                        <p className="mt-1 text-[0.72rem] font-semibold text-slate-500">Set commercial baseline for internal and external bidding.</p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Base Price ($)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={createLoadForm.basePrice}
+                            onChange={(event) => handleCreateLoadFieldChange('basePrice', event.target.value)}
+                            placeholder="e.g. 2500"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Bid Base Price ($)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={createLoadForm.bidBasePrice}
+                            onChange={(event) => handleCreateLoadFieldChange('bidBasePrice', event.target.value)}
+                            placeholder="e.g. 2350"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                            required
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Payment Terms</label>
+                          <input
+                            type="text"
+                            value={createLoadForm.paymentTerms}
+                            onChange={(event) => handleCreateLoadFieldChange('paymentTerms', event.target.value)}
+                            placeholder="e.g. Net 15"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          />
+                        </div>
+                      </div>
+                    </section>
+
+                    <section className="space-y-3 border-t border-slate-200/80 pt-4">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">Documents</h4>
+                        <p className="mt-1 text-[0.72rem] font-semibold text-slate-500">Attach supporting files for smoother dispatch handoff.</p>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Upload Load Photos</label>
+                          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">
+                            <Upload className="h-4 w-4" />
+                            <span className="truncate">{createLoadForm.loadPhotos.length ? `${createLoadForm.loadPhotos.length} photo(s) selected` : 'Choose load images'}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(event) => handleCreateLoadPhotosChange(event.target.files)}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Shipment Invoice</label>
+                          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100">
+                            <Upload className="h-4 w-4" />
+                            <span className="truncate">{createLoadForm.shipmentInvoice?.name ?? 'Choose file (PDF/Image)'}</span>
+                            <input
+                              type="file"
+                              accept=".pdf,image/*"
+                              onChange={(event) => handleCreateLoadFileChange('shipmentInvoice', event.target.files?.[0] ?? null)}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      {createLoadPhotoPreviews.length ? (
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          {createLoadPhotoPreviews.map((photo) => (
+                            <figure key={photo.url} className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                              <img src={photo.url} alt={photo.name} className="h-20 w-full object-cover" />
+                              <figcaption className="truncate border-t border-slate-200 bg-white px-2 py-1 text-[0.62rem] font-semibold text-slate-500">
+                                {photo.name}
+                              </figcaption>
+                            </figure>
+                          ))}
+                        </div>
+                      ) : null}
+                    </section>
+
+                    <section className="space-y-3 border-t border-slate-200/80 pt-4">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-800">Important Notes</h4>
+                        <p className="mt-1 text-[0.72rem] font-semibold text-slate-500">Add risk, handling, and dock instructions for operations teams.</p>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Important Note</label>
+                          <textarea
+                            value={createLoadForm.importantNote}
+                            onChange={(event) => handleCreateLoadFieldChange('importantNote', event.target.value)}
+                            placeholder="Add handling notes, fragility, security instructions..."
+                            rows={3}
+                            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-semibold text-slate-500">Special Instructions</label>
+                          <textarea
+                            value={createLoadForm.specialInstructions}
+                            onChange={(event) => handleCreateLoadFieldChange('specialInstructions', event.target.value)}
+                            placeholder="Dock rules, contact protocol, loading sequence, etc."
+                            rows={3}
+                            className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/10"
+                          />
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+
+                <div className="shrink-0 flex items-center justify-end gap-2.5 border-t border-slate-200 bg-gradient-to-r from-white to-blue-50/60 px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCreateLoadPanelOpen(false)
+                      setCreateLoadForm({ ...createLoadFormDefaults })
+                    }}
+                    className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="inline-flex items-center rounded-xl bg-blue-600 px-3.5 py-2 text-sm font-semibold text-white shadow-[0_14px_26px_-18px_rgba(37,99,235,0.9)] hover:bg-blue-700"
+                  >
+                    Save Load Request
+                  </button>
+                </div>
+              </form>
+            </aside>
           </main>
         </div>
       </div>
