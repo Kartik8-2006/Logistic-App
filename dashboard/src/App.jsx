@@ -660,127 +660,61 @@ const fallbackData = {
     { id: 'overdue-amount', label: 'Overdue Amount', value: '$42,500', note: '3 critical overdue', icon: 'AlertTriangle', iconTone: 'bg-rose-100 text-rose-600', bgScale: 'bg-rose-50 border-rose-100', textTone: 'text-rose-700' },
     { id: 'processed-this-month', label: 'Processed (MTD)', value: '$890,200', note: '+15% vs last month', icon: 'FileCheck2', iconTone: 'bg-blue-100 text-blue-600', bgScale: 'bg-blue-50 border-blue-100', textTone: 'text-blue-700' },
   ],
-  invoiceTabs: ['All Invoices', 'Pending', 'Paid', 'Overdue'],
+  invoiceTabs: ['All', 'Due', 'Paid'],
   invoiceList: [
     {
-      id: 'INV-2024-8831',
-      customerName: 'Walmart Distribution',
-      customerAddress: 'Chicago, IL',
-      issueDate: '01 Feb, 2024',
-      dueDate: '15 Feb, 2024',
-      amount: '$12,450.00',
-      status: 'Pending',
-      tone: 'bg-[#eff6ff] text-[#3b82f6]',
-      statusDots: ['bg-blue-300', 'bg-blue-400', 'bg-slate-200'],
-      actionLabel: 'Send Reminder',
-      actionTone: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
+      id: 'LOAD-2024-4402', driverName: 'Peter Lange', driverId: 'DR-2201',
+      customerName: 'Summit Industries', phone: '+1 (512) 555-0147',
+      route: 'Denver, CO → Austin, TX', vehicle: 'Freightliner Cascadia • TX-4821',
+      deliveryDate: 'Dec 6, 2024', deliveryTime: '2:45 PM',
+      expectedTime: '3:00 PM', onTime: true,
+      amount: '$1,250.00', status: 'Due',
+      bankName: 'Chase Bank', bankAccount: '****4821',
     },
     {
-      id: 'INV-2024-8832',
-      customerName: 'Target Corporation',
-      customerAddress: 'Dallas, TX',
-      issueDate: '28 Jan, 2024',
-      dueDate: '10 Feb, 2024',
-      amount: '$8,920.00',
-      status: 'Overdue',
-      tone: 'bg-[#fef2f2] text-[#ef4444]',
-      statusDots: ['bg-red-400', 'bg-red-500', 'bg-red-600'],
-      actionLabel: 'Escalate',
-      actionTone: 'bg-rose-50 text-rose-600 hover:bg-rose-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
+      id: 'LOAD-2024-4521', driverName: 'Sarah Chen', driverId: 'DR-2156',
+      customerName: 'Global Manufacturing Co', phone: '+1 (713) 555-0289',
+      route: 'Houston, TX → Dallas, TX', vehicle: 'Kenworth T680 • TX-7734',
+      deliveryDate: 'Dec 8, 2024', deliveryTime: '12:30 PM',
+      expectedTime: '11:00 AM', onTime: false,
+      amount: '$2,450.00', status: 'Due',
+      bankName: 'Bank of America', bankAccount: '****9012',
     },
     {
-      id: 'INV-2024-8833',
-      customerName: 'Amazon Logistics',
-      customerAddress: 'Los Angeles, CA',
-      issueDate: '15 Jan, 2024',
-      dueDate: '30 Jan, 2024',
-      amount: '$24,100.00',
-      status: 'Paid',
-      tone: 'bg-[#ecfdf5] text-[#10b981]',
-      statusDots: ['bg-emerald-300', 'bg-emerald-400', 'bg-emerald-500'],
-      actionLabel: 'View Receipt',
-      actionTone: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
+      id: 'LOAD-2024-4489', driverName: 'David Thompson', driverId: 'DR-3421',
+      customerName: 'Retail Solutions Inc', phone: '+1 (214) 555-0391',
+      route: 'Dallas, TX → Phoenix, AZ', vehicle: 'Peterbilt 579 • AZ-1192',
+      deliveryDate: 'Dec 7, 2024', deliveryTime: '4:15 PM',
+      expectedTime: '5:00 PM', onTime: true,
+      amount: '$4,200.00', status: 'Paid', paidDate: 'Dec 9, 2024', paidMethod: 'ACH',
+      bankName: 'Wells Fargo', bankAccount: '****3356',
     },
     {
-      id: 'INV-2024-8834',
-      customerName: 'FedEx Ground',
-      customerAddress: 'Miami, FL',
-      issueDate: '05 Feb, 2024',
-      dueDate: '20 Feb, 2024',
-      amount: '$3,400.00',
-      status: 'Pending',
-      tone: 'bg-[#eff6ff] text-[#3b82f6]',
-      statusDots: ['bg-blue-300', 'bg-blue-400', 'bg-slate-200'],
-      actionLabel: 'Send Reminder',
-      actionTone: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
+      id: 'LOAD-2024-4318', driverName: 'Elena Kraft', driverId: 'DR-8812',
+      customerName: 'National Freight System', phone: '+1 (206) 555-0512',
+      route: 'Seattle, WA → Portland, OR', vehicle: 'Volvo VNL 860 • OR-5501',
+      deliveryDate: 'Dec 5, 2024', deliveryTime: '9:15 AM',
+      expectedTime: '10:00 AM', onTime: true,
+      amount: '$1,150.00', status: 'Paid', paidDate: 'Dec 7, 2024', paidMethod: 'Wire',
+      bankName: 'US Bank', bankAccount: '****7890',
     },
     {
-      id: 'INV-2024-8835',
-      customerName: 'Home Depot Supply',
-      customerAddress: 'Houston, TX',
-      issueDate: '02 Feb, 2024',
-      dueDate: '16 Feb, 2024',
-      amount: '$6,850.00',
-      status: 'Pending',
-      tone: 'bg-[#eff6ff] text-[#3b82f6]',
-      statusDots: ['bg-blue-300', 'bg-blue-400', 'bg-slate-200'],
-      actionLabel: 'Send Reminder',
-      actionTone: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
+      id: 'LOAD-2024-4578', driverName: 'Michael Rodriguez', driverId: 'DR-1847',
+      customerName: 'TechCorp Industries', phone: '+1 (512) 555-0734',
+      route: 'Austin, TX → San Antonio, TX', vehicle: 'Freightliner Cascadia • TX-9981',
+      deliveryDate: 'Dec 8, 2024', deliveryTime: '2:45 PM',
+      expectedTime: '2:30 PM', onTime: false,
+      amount: '$3,800.00', status: 'Paid', paidDate: 'Dec 10, 2024', paidMethod: 'ACH',
+      bankName: 'Chase Bank', bankAccount: '****2201',
     },
     {
-      id: 'INV-2024-8836',
-      customerName: 'Costco Wholesale',
-      customerAddress: 'Denver, CO',
-      issueDate: '20 Jan, 2024',
-      dueDate: '04 Feb, 2024',
-      amount: '$15,200.00',
-      status: 'Overdue',
-      tone: 'bg-[#fef2f2] text-[#ef4444]',
-      statusDots: ['bg-red-400', 'bg-red-500', 'bg-red-600'],
-      actionLabel: 'Escalate',
-      actionTone: 'bg-rose-50 text-rose-600 hover:bg-rose-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
-    },
-    {
-      id: 'INV-2024-8837',
-      customerName: 'Safeway Distribution',
-      customerAddress: 'Portland, OR',
-      issueDate: '10 Jan, 2024',
-      dueDate: '25 Jan, 2024',
-      amount: '$4,150.00',
-      status: 'Paid',
-      tone: 'bg-[#ecfdf5] text-[#10b981]',
-      statusDots: ['bg-emerald-300', 'bg-emerald-400', 'bg-emerald-500'],
-      actionLabel: 'View Receipt',
-      actionTone: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
-    },
-    {
-      id: 'INV-2024-8838',
-      customerName: 'Whole Foods Market',
-      customerAddress: 'Sacramento, CA',
-      issueDate: '18 Jan, 2024',
-      dueDate: '02 Feb, 2024',
-      amount: '$9,300.00',
-      status: 'Paid',
-      tone: 'bg-[#ecfdf5] text-[#10b981]',
-      statusDots: ['bg-emerald-300', 'bg-emerald-400', 'bg-emerald-500'],
-      actionLabel: 'View Receipt',
-      actionTone: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100',
-      secondAction: 'Download',
-      secondTone: 'bg-slate-50 text-slate-600 hover:bg-slate-100',
+      id: 'LOAD-2024-4445', driverName: 'Lisa Johnson', driverId: 'DR-5678',
+      customerName: 'Logistics Partners LLC', phone: '+1 (602) 555-0189',
+      route: 'Phoenix, AZ → Las Vegas, NV', vehicle: 'Mack Anthem • NV-3344',
+      deliveryDate: 'Dec 6, 2024', deliveryTime: '10:20 AM',
+      expectedTime: '11:00 AM', onTime: true,
+      amount: '$1,850.00', status: 'Paid', paidDate: 'Dec 8, 2024', paidMethod: 'Check',
+      bankName: 'Capital One', bankAccount: '****5567',
     },
   ],
 }
@@ -933,8 +867,9 @@ function App() {
   const [podActiveTab, setPodActiveTab] = useState('All Loads')
   const [activeUploadId, setActiveUploadId] = useState('LOAD-2024-4578')
 
-  const [billingActiveTab, setBillingActiveTab] = useState('All Invoices')
+  const [billingActiveTab, setBillingActiveTab] = useState('All Payouts')
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null)
+  const [selectedPayMethod, setSelectedPayMethod] = useState('ACH')
   const [billingCurrentPage, setBillingCurrentPage] = useState(1)
   const [selectedReportId, setSelectedReportId] = useState(null)
   const [isCreateLoadPanelOpen, setIsCreateLoadPanelOpen] = useState(false)
@@ -4306,41 +4241,25 @@ function App() {
                                 </div>
                               </div>
                               <div className="col-span-1 flex items-center justify-end gap-2 pr-0">
-                                {load.actionLabel === 'Upload' ? (
+                                {load.status === 'Pending Upload' ? (
+                                  <span className="text-[0.7rem] font-medium text-slate-400 italic">Waiting...</span>
+                                ) : load.status === 'Submitted' ? (
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation()
-                                      setActiveUploadId(activeUploadId === load.id ? null : load.id)
+                                      setSelectedPodLoadId(load.id)
                                     }}
-                                    className={`rounded-[0.6rem] px-5 py-2 text-[0.8rem] tracking-tight font-bold transition relative z-10 ${load.actionTone}`}
+                                    className="relative z-10 rounded-xl bg-blue-50 px-4 py-1.5 text-[0.75rem] font-bold text-blue-600 transition hover:bg-blue-100"
                                   >
-                                    {activeUploadId === load.id ? 'Cancel' : 'Upload'}
+                                    Review
                                   </button>
-                                ) : load.actionLabel === 'View' ? (
-                                  <div className="flex gap-2">
-                                    <button onClick={e => e.stopPropagation()} className={`relative z-10 rounded-xl px-4 py-1.5 text-[0.75rem] font-bold transition ${load.actionTone}`}>{load.actionLabel}</button>
-                                    {load.secondAction && (
-                                      <button onClick={e => e.stopPropagation()} className={`relative z-10 rounded-xl px-3.5 py-1.5 font-bold text-[0.75rem] transition ${load.secondTone}`}>{load.secondAction}</button>
-                                    )}
-                                  </div>
                                 ) : (
-                                  <button onClick={e => e.stopPropagation()} className={`relative z-10 rounded-xl px-2 py-1.5 font-bold text-[0.8rem] transition ${load.actionTone}`}>{load.actionLabel}</button>
+                                  <button onClick={e => { e.stopPropagation(); setSelectedPodLoadId(load.id) }} className={`relative z-10 rounded-xl px-4 py-1.5 font-bold text-[0.75rem] transition ${load.actionTone}`}>{load.actionLabel || 'View'}</button>
                                 )}
                               </div>
                             </div>
 
-                            {/* Inline Dropzone Expansion */}
-                            {activeUploadId === load.id && load.status === 'Pending Upload' && (
-                              <div className="px-1 pb-6 mb-4 animate-in slide-in-from-top-1 fade-in duration-200">
-                                <div className="w-full relative rounded-2xl border-[1.5px] border-dashed border-[#93c5fd] bg-gradient-to-b from-[#eff6ff] to-[#f8fafc] py-16 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:from-[#e0f0ff] transition group">
-                                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-sm border border-slate-100 mb-4 transition group-hover:bg-blue-50 group-hover:scale-105">
-                                    <Upload className="h-[18px] w-[18px] text-blue-500" strokeWidth={2.5} />
-                                  </div>
-                                  <h4 className="text-[1.05rem] font-bold tracking-tight text-slate-700">Upload POD Documents (Image/PDF)</h4>
-                                  <p className="mt-1.5 text-[0.85rem] font-medium text-slate-400">Drag and drop files here or click to browse</p>
-                                </div>
-                              </div>
-                            )}
+                            {/* Inline Dropzone Removed (Manager shouldn't upload) */}
                           </div>
                         ))}
                       </div>
@@ -4359,10 +4278,7 @@ function App() {
                           <div className="flex items-center gap-3">
                             <h2 className="text-[1.3rem] font-bold tracking-tight text-slate-900">{selLoad.id}</h2>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <button className="flex items-center gap-1.5 rounded-xl bg-[#10b981] px-4 py-2 text-[0.85rem] font-bold text-white shadow-sm hover:bg-[#059669] transition">
-                              <Check className="h-4 w-4" strokeWidth={3} /> Approve
-                            </button>
+                          <div className="flex items-center gap-2">
                             <button onClick={() => setSelectedPodLoadId(null)} className="flex items-center justify-center rounded-full bg-white border border-slate-200 w-8 h-8 text-slate-400 hover:text-slate-600 hover:bg-slate-50 shadow-sm transition">
                               <X className="h-4 w-4" strokeWidth={2.5} />
                             </button>
@@ -4372,43 +4288,53 @@ function App() {
                         <div className="flex-1 overflow-y-auto px-6 dashboard-scrollbar flex flex-col gap-6 pb-12">
 
                           {/* Info Summary Card */}
-                          <div className="rounded-[1.25rem] border border-slate-200/80 bg-white p-5 shadow-sm relative overflow-hidden">
+                          <div className="rounded-[1.25rem] border border-slate-200/80 bg-white p-5 shadow-sm relative overflow-hidden shrink-0">
                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 to-blue-600"></div>
 
                             <div className="flex items-center gap-3 mb-5 pb-5 border-b border-slate-100 mt-2">
                               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 shadow-[0_2px_8px_-2px_rgba(59,130,246,0.6)]">
                                 <Truck className="h-5 w-5 text-white" strokeWidth={2.5} />
                               </div>
-                              <div>
-                                <h3 className="text-[1.05rem] font-bold tracking-tight text-slate-900 leading-tight">{selLoad.id}</h3>
-                                <p className="text-[0.8rem] font-medium text-slate-400 mt-0.5 max-w-[200px] truncate">{selLoad.customerName}</p>
+                              <div className="flex-1">
+                                <h3 className="text-[1.1rem] font-bold tracking-tight text-slate-900 leading-tight">{selLoad.customerName}</h3>
+                                <p className="text-[0.8rem] font-medium text-slate-500 mt-0.5">{selLoad.id}</p>
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-y-5 gap-x-4">
+                            <div className="flex flex-col gap-5">
                               <div>
-                                <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Delivery Date</p>
-                                <p className="text-[0.85rem] font-bold text-slate-800 mt-1">{selLoad.date}</p>
-                              </div>
-                              <div>
-                                <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Driver</p>
-                                <p className="text-[0.85rem] font-bold text-slate-800 mt-1">{selLoad.driverName}</p>
-                              </div>
-                              <div className="col-span-2">
-                                <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Delivery Address</p>
-                                <p className="text-[0.85rem] font-bold text-slate-800 mt-1 leading-snug">{selLoad.customerAddress}</p>
-                              </div>
-                              <div>
-                                <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Status</p>
-                                <div className="mt-1">
-                                  <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-[0.75rem] font-bold tracking-tight ${selLoad.status === 'Approved' ? 'bg-[#ecfdf5] text-[#10b981]' :
-                                    selLoad.status === 'Submitted' ? 'bg-[#eff6ff] text-[#3b82f6]' :
-                                      selLoad.status === 'Rejected' ? 'bg-[#fef2f2] text-[#ef4444]' :
-                                        'bg-slate-100 text-slate-600'
-                                    }`}>
-                                    {selLoad.status}
-                                  </span>
+                                <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Driver Details</p>
+                                <div className="mt-1.5 flex items-center gap-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[0.8rem] font-bold text-slate-600 border border-slate-200 shadow-sm">
+                                    {selLoad.driverInit}
+                                  </div>
+                                  <div>
+                                    <p className="text-[0.95rem] font-bold text-slate-800 tracking-tight">{selLoad.driverName}</p>
+                                    <p className="text-[0.75rem] font-medium text-slate-500 mt-0.5">Driver ID: {selLoad.driverId}</p>
+                                  </div>
                                 </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Status</p>
+                                  <div className="mt-1.5">
+                                    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-[0.75rem] font-bold tracking-tight ${selLoad.status === 'Approved' ? 'bg-[#ecfdf5] text-[#10b981]' :
+                                      selLoad.status === 'Submitted' ? 'bg-[#eff6ff] text-[#3b82f6]' :
+                                        selLoad.status === 'Rejected' ? 'bg-[#fef2f2] text-[#ef4444]' :
+                                          'bg-slate-100 text-slate-600'
+                                      }`}>
+                                      {selLoad.status}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Delivery Date</p>
+                                  <p className="text-[0.85rem] font-bold text-slate-800 mt-1.5">{selLoad.date} <br /> <span className="text-slate-500 text-[0.75rem]">{selLoad.time}</span></p>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-[0.7rem] font-bold text-slate-400 uppercase tracking-wider">Delivery Address</p>
+                                <p className="text-[0.9rem] font-bold text-slate-800 mt-1.5 leading-snug break-words whitespace-normal">{selLoad.customerAddress}</p>
                               </div>
                             </div>
                           </div>
@@ -4473,6 +4399,18 @@ function App() {
                           </div>
 
                         </div>
+
+                        {/* Sticky Action Footer */}
+                        {selLoad.status === 'Submitted' && (
+                          <div className="shrink-0 bg-white border-t border-slate-100 p-6 shadow-[0_-12px_24px_-12px_rgba(0,0,0,0.05)] z-10 w-full mt-auto relative">
+                            <button className="w-full mb-3 flex items-center justify-center gap-2 rounded-[1rem] bg-[#10b981] py-4 text-[1rem] tracking-tight font-bold text-white shadow-[0_4px_12px_-4px_rgba(16,185,129,0.5)] hover:bg-[#059669] hover:-translate-y-0.5 transition-all duration-300">
+                              <Check className="h-5 w-5" strokeWidth={3} /> Approve Documentation
+                            </button>
+                            <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3.5 text-[0.95rem] font-bold text-slate-700 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-colors">
+                              <X className="h-4 w-4" strokeWidth={2.5} /> Decline Submission
+                            </button>
+                          </div>
+                        )}
                       </aside>
                     );
                   })()}
@@ -4488,8 +4426,8 @@ function App() {
                       {/* Title & Action Buttons */}
                       <div className="flex items-start justify-between">
                         <div>
-                          <h2 className="text-[1.7rem] font-bold tracking-tight text-slate-900 uppercase">BILLING & INVOICES</h2>
-                          <p className="text-[0.95rem] font-medium text-slate-500 mt-1">Manage invoices, track payments, and handle customer billing</p>
+                          <h2 className="text-[1.7rem] font-bold tracking-tight text-slate-900 uppercase">DRIVER SETTLEMENTS</h2>
+                          <p className="text-[0.95rem] font-medium text-slate-500 mt-1">Process completed runs, track driver payments, and handle payouts</p>
                         </div>
                       </div>
 
@@ -4546,10 +4484,10 @@ function App() {
                     <div className="w-full bg-[#fafafb] border-y border-slate-200 mt-2">
                       <div className="w-full px-6 lg:px-8">
                         <div className="grid grid-cols-12 gap-5 py-3.5 text-[0.7rem] font-bold tracking-widest text-slate-500 uppercase">
-                          <div className="col-span-2">Invoice #</div>
-                          <div className="col-span-3">Customer</div>
-                          <div className="col-span-2">Amount</div>
-                          <div className="col-span-2">Due Date</div>
+                          <div className="col-span-2">Load ID</div>
+                          <div className="col-span-3">Driver</div>
+                          <div className="col-span-2">Amount & Method</div>
+                          <div className="col-span-2">Approved Date</div>
                           <div className="col-span-1 pl-2">Status</div>
                           <div className="col-span-2 text-right pr-2">Actions</div>
                         </div>
@@ -4563,7 +4501,7 @@ function App() {
                       {/* Table Body */}
                       <div className="flex flex-col">
                         {(() => {
-                          const filtered = dashboardData.invoiceList?.filter(item => billingActiveTab === 'All Invoices' || item.status === billingActiveTab) || [];
+                          const filtered = dashboardData.invoiceList?.filter(item => billingActiveTab === 'All Payouts' || item.status === billingActiveTab) || [];
                           const itemsPerPage = 6;
                           const paginated = filtered.slice((billingCurrentPage - 1) * itemsPerPage, billingCurrentPage * itemsPerPage);
 
@@ -4580,33 +4518,40 @@ function App() {
 
                                 <div className="col-span-2">
                                   <p className="text-[0.95rem] font-bold tracking-tight text-slate-800">{invoice.id}</p>
-                                  <p className="text-[0.75rem] font-medium text-slate-500 mt-0.5">Created {invoice.issueDate}</p>
+                                  <p className="text-[0.75rem] font-medium text-slate-500 mt-0.5">Approved: {invoice.issueDate}</p>
                                 </div>
 
                                 <div className="col-span-3 flex items-center gap-3">
                                   <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[0.75rem] font-bold shadow-sm ${invoice.tone}`}>
-                                    {getInitials(invoice.customerName)}
+                                    {getInitials(invoice.driverName || 'Driver Name')}
                                   </div>
                                   <div className="min-w-0 pr-4">
-                                    <p className="text-[0.9rem] font-bold text-slate-800 truncate">{invoice.customerName}</p>
-                                    <p className="text-[0.75rem] font-medium text-slate-500 truncate">{invoice.customerName.toLowerCase().replace(/ /g, '')}@company.com</p>
+                                    <p className="text-[0.9rem] font-bold text-slate-800 truncate">{invoice.driverName}</p>
+                                    <p className="text-[0.75rem] font-medium text-slate-500">{invoice.driverId}</p>
                                   </div>
                                 </div>
 
                                 <div className="col-span-2">
-                                  <p className="text-[1.1rem] tracking-tight font-black text-slate-800">{invoice.amount}</p>
-                                  <p className="text-[0.75rem] font-semibold text-slate-400 mt-0.5 uppercase tracking-wide">Net 30</p>
+                                  <p className="text-[1.05rem] tracking-tight font-black text-slate-800">{invoice.amount}</p>
+                                  <span className={`inline-flex items-center gap-1 mt-1 text-[0.7rem] font-bold px-2 py-0.5 rounded-full ${invoice.paymentMethod === 'Wire' ? 'bg-blue-50 text-blue-600' :
+                                      invoice.paymentMethod === 'Check' ? 'bg-slate-100 text-slate-600' :
+                                        'bg-violet-50 text-violet-600'
+                                    }`}>
+                                    {invoice.paymentMethod === 'ACH' ? '🏦' : invoice.paymentMethod === 'Wire' ? '⚡' : '📄'} {invoice.paymentMethod}
+                                  </span>
                                 </div>
 
                                 <div className="col-span-2">
-                                  <p className="text-[0.9rem] font-bold text-slate-800">{invoice.dueDate}</p>
-                                  <p className={`text-[0.75rem] font-semibold mt-0.5 ${invoice.status === 'Overdue' ? 'text-rose-500' : 'text-slate-500'}`}>
-                                    {invoice.status === 'Overdue' ? '45 days overdue' : invoice.status === 'Pending' ? '15 days remaining' : 'Paid on time'}
+                                  <p className="text-[0.9rem] font-bold text-slate-800">{invoice.issueDate}</p>
+                                  <p className={`text-[0.75rem] font-semibold mt-0.5 ${invoice.status === 'Settled' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                    {invoice.status === 'Settled' ? 'Transfer complete' : 'Awaiting transfer'}
                                   </p>
                                 </div>
 
                                 <div className="col-span-1 pl-2">
-                                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[0.75rem] font-bold ${invoice.status === 'Pending' ? 'bg-[#fefce8] text-[#a16207]' : invoice.tone}`}>
+                                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[0.72rem] font-bold ${invoice.status === 'Settled' ? 'bg-[#ecfdf5] text-[#10b981]' :
+                                      'bg-[#fefce8] text-[#a16207]'
+                                    }`}>
                                     {invoice.status}
                                   </span>
                                 </div>
@@ -4615,8 +4560,8 @@ function App() {
                                   <button onClick={(e) => { e.stopPropagation() }} className="flex h-[34px] w-[34px] items-center justify-center rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]">
                                     <Eye className="h-4 w-4" strokeWidth={2.5} />
                                   </button>
-                                  <button onClick={(e) => { e.stopPropagation() }} className={`flex h-[34px] w-[34px] items-center justify-center rounded-lg transition shadow-sm ${invoice.status === 'Paid' ? 'bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#dcfce7]' : invoice.status === 'Overdue' ? 'bg-[#fff1f2] text-[#e11d48] hover:bg-[#ffe4e6] border border-[#ffe4e6]' : 'bg-[#f0fdf4] text-[#16a34a] hover:bg-[#dcfce7] border border-[#dcfce7]'}`}>
-                                    {invoice.status === 'Paid' || invoice.status === 'Pending' ? <Download className="h-4 w-4" strokeWidth={2.5} /> : <Mail className="h-4 w-4" strokeWidth={2.5} />}
+                                  <button onClick={(e) => { e.stopPropagation() }} className={`flex h-[34px] w-[34px] items-center justify-center rounded-lg transition shadow-sm ${invoice.status === 'Paid' ? 'bg-[#f0fdf4] text-[#16a34a] border border-[#dcfce7]' : 'bg-[#fffbeb] text-[#d97706] hover:bg-[#fef3c7] border border-[#fde68a]'}`}>
+                                    {invoice.status === 'Paid' ? <ClipboardCheck className="h-4 w-4" strokeWidth={2.5} /> : <ArrowRight className="h-4 w-4" strokeWidth={2.5} />}
                                   </button>
                                 </div>
 
@@ -4629,7 +4574,7 @@ function App() {
 
                     {/* Pagination */}
                     {(() => {
-                      const filtered = dashboardData.invoiceList?.filter(item => billingActiveTab === 'All Invoices' || item.status === billingActiveTab) || [];
+                      const filtered = dashboardData.invoiceList?.filter(item => billingActiveTab === 'All Payouts' || item.status === billingActiveTab) || [];
                       const itemsPerPage = 6;
                       const totalLength = filtered.length;
                       const totalPages = Math.ceil(totalLength / itemsPerPage) || 1;
@@ -4638,7 +4583,7 @@ function App() {
 
                       return (
                         <div className="mt-4 border-t border-slate-100 pt-4 px-2 flex items-center justify-between shrink-0">
-                          <p className="text-[0.85rem] text-slate-500 font-medium">Showing <span className="font-bold text-slate-800">{startItem}</span> to <span className="font-bold text-slate-800">{endItem}</span> of <span className="font-bold text-slate-800">{totalLength}</span> invoices</p>
+                          <p className="text-[0.85rem] text-slate-500 font-medium">Showing <span className="font-bold text-slate-800">{startItem}</span> to <span className="font-bold text-slate-800">{endItem}</span> of <span className="font-bold text-slate-800">{totalLength}</span> payouts</p>
                           <div className="flex items-center gap-1.5">
                             <button
                               disabled={billingCurrentPage === 1}
@@ -4682,72 +4627,66 @@ function App() {
                     const selInvoice = dashboardData.invoiceList?.find(inv => inv.id === selectedInvoiceId);
                     if (!selInvoice) return null;
 
-                    // Generate deterministic line items based on the invoice amount
+                    // Generate deterministic line items based on the payout amount
                     const amountNum = parseFloat(selInvoice.amount.replace(/[$,]/g, ''));
-                    const freightAmt = (amountNum * 0.74).toFixed(2);
-                    const fuelAmt = (amountNum * 0.12).toFixed(2);
-                    const accessorialAmt = (amountNum * 0.05).toFixed(2);
-                    const subtotal = (parseFloat(freightAmt) + parseFloat(fuelAmt) + parseFloat(accessorialAmt)).toFixed(2);
-                    const taxRate = 9.875;
-                    const taxAmt = (parseFloat(subtotal) * taxRate / 100).toFixed(2);
-                    const total = (parseFloat(subtotal) + parseFloat(taxAmt)).toFixed(2);
+                    const basePayout = (amountNum * 0.85).toFixed(2);
+                    const safetyBonus = (amountNum * 0.05).toFixed(2);
+                    const detentionPay = (amountNum * 0.10).toFixed(2);
+                    const total = (parseFloat(basePayout) + parseFloat(safetyBonus) + parseFloat(detentionPay)).toFixed(2);
 
                     return (
                       <aside className="absolute right-0 top-0 bottom-0 z-30 w-[420px] bg-[#fafafb] border-l border-slate-200 shadow-[-24px_0_48px_-12px_rgba(0,0,0,0.15)] flex flex-col pt-6 pb-6 animate-in slide-in-from-right duration-300">
 
                         {/* Panel Header */}
-                        <div className="flex items-center justify-between px-6 mb-6">
+                        <div className="flex items-center justify-between px-6 mb-5">
                           <div className="flex items-center gap-3">
-                            <h2 className="text-[1.3rem] font-bold tracking-tight text-slate-900">{selInvoice.id}</h2>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button className="flex items-center gap-1.5 rounded-xl bg-[#3b82f6] px-4 py-2 text-[0.85rem] font-bold text-white shadow-sm hover:bg-blue-700 transition">
-                              <Mail className="h-4 w-4" strokeWidth={2.5} /> Send
-                            </button>
-                            <button onClick={() => setSelectedInvoiceId(null)} className="flex items-center justify-center rounded-full bg-white border border-slate-200 w-8 h-8 text-slate-400 hover:text-slate-600 hover:bg-slate-50 shadow-sm transition">
-                              <X className="h-4 w-4" strokeWidth={2.5} />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto px-6 dashboard-scrollbar flex flex-col pb-12">
-
-                          {/* Icon + Title (outside card) */}
-                          <div className="flex items-center gap-3.5 mb-5">
-                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#4f7df3] shadow-[0_4px_12px_-4px_rgba(79,125,243,0.5)]">
-                              <FileText className="h-5 w-5 text-white" strokeWidth={2.5} />
+                            <div className={`flex h-10 w-10 items-center justify-center rounded-full text-[0.85rem] font-bold shrink-0 ${selInvoice.tone}`}>
+                              {(selInvoice.driverName || 'DN').split(' ').map(n => n[0]).join('').toUpperCase()}
                             </div>
                             <div>
-                              <h3 className="text-[1.1rem] font-bold tracking-tight text-slate-900 leading-tight">{selInvoice.id}</h3>
-                              <p className="text-[0.82rem] font-medium text-slate-400 mt-0.5">{selInvoice.customerName}</p>
+                              <h2 className="text-[1.1rem] font-bold tracking-tight text-slate-900 leading-tight">{selInvoice.driverName}</h2>
+                              <p className="text-[0.78rem] font-medium text-slate-400">{selInvoice.driverId} &middot; {selInvoice.id}</p>
                             </div>
                           </div>
+                          <button onClick={() => setSelectedInvoiceId(null)} className="flex items-center justify-center rounded-full bg-white border border-slate-200 w-8 h-8 text-slate-400 hover:text-slate-600 hover:bg-slate-50 shadow-sm transition">
+                            <X className="h-4 w-4" strokeWidth={2.5} />
+                          </button>
+                        </div>
 
-                          {/* Info Box (simple bordered card) */}
-                          <div className="rounded-2xl border border-slate-200 bg-white p-5 mb-8">
-                            <div className="grid grid-cols-2 gap-y-5 gap-x-6">
+                        <div className="flex-1 overflow-y-auto px-6 dashboard-scrollbar flex flex-col pb-4">
+
+                          {/* Customer + Load info strip */}
+                          <div className="rounded-xl border border-slate-100 bg-white px-4 py-3 mb-5 flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 shrink-0">
+                              <ReceiptText className="h-4 w-4 text-slate-500" strokeWidth={2} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-[0.82rem] font-bold text-slate-700 truncate">{selInvoice.customerName || 'Customer'}</p>
+                              <p className="text-[0.72rem] font-medium text-slate-400">Approved: {selInvoice.issueDate}</p>
+                            </div>
+                            <span className={`ml-auto inline-flex rounded-full px-2.5 py-1 text-[0.72rem] font-bold shrink-0 ${selInvoice.status === 'Settled' ? 'bg-[#ecfdf5] text-[#10b981]' : 'bg-[#fefce8] text-[#a16207]'}`}>
+                              {selInvoice.status}
+                            </span>
+                          </div>
+
+                          {/* Payout Summary Card */}
+                          <div className="rounded-2xl border border-slate-200 bg-white p-5 mb-5">
+                            <div className="grid grid-cols-2 gap-y-4 gap-x-6">
                               <div>
-                                <p className="text-[0.75rem] font-medium text-slate-400">Issue Date:</p>
-                                <p className="text-[0.92rem] font-bold text-slate-800 mt-0.5">{selInvoice.issueDate}</p>
+                                <p className="text-[0.72rem] font-semibold text-slate-400 uppercase tracking-wide">Driver</p>
+                                <p className="text-[0.9rem] font-bold text-slate-800 mt-0.5">{selInvoice.driverName}</p>
                               </div>
                               <div>
-                                <p className="text-[0.75rem] font-medium text-slate-400">Due Date:</p>
-                                <p className="text-[0.92rem] font-bold text-slate-800 mt-0.5">{selInvoice.dueDate}</p>
+                                <p className="text-[0.72rem] font-semibold text-slate-400 uppercase tracking-wide">Driver ID</p>
+                                <p className="text-[0.9rem] font-bold text-slate-800 mt-0.5">{selInvoice.driverId}</p>
                               </div>
                               <div>
-                                <p className="text-[0.75rem] font-medium text-slate-400">Amount:</p>
+                                <p className="text-[0.72rem] font-semibold text-slate-400 uppercase tracking-wide">Total Payout</p>
                                 <p className="text-[1.35rem] font-black tracking-tight text-slate-900 mt-0.5">{selInvoice.amount}</p>
                               </div>
                               <div>
-                                <p className="text-[0.75rem] font-medium text-slate-400">Status:</p>
-                                <div className="mt-1">
-                                  <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-[0.78rem] font-bold tracking-tight ${selInvoice.status === 'Paid' ? 'bg-[#ecfdf5] text-[#10b981]' :
-                                    selInvoice.status === 'Overdue' ? 'bg-[#fef2f2] text-[#ef4444]' :
-                                      'bg-[#fefce8] text-[#a16207]'
-                                    }`}>
-                                    {selInvoice.status}
-                                  </span>
-                                </div>
+                                <p className="text-[0.72rem] font-semibold text-slate-400 uppercase tracking-wide">Approved Date</p>
+                                <p className="text-[0.9rem] font-bold text-slate-800 mt-0.5">{selInvoice.issueDate}</p>
                               </div>
                             </div>
                           </div>
@@ -4762,136 +4701,100 @@ function App() {
                               <div className="p-5 border-b border-slate-100">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1 pr-3">
-                                    <p className="text-[0.92rem] font-bold text-slate-800 leading-snug">Freight Transportation - LOAD-2024-4578</p>
-                                    <p className="text-[0.8rem] font-medium text-slate-400 mt-1">{selInvoice.customerAddress} to Houston, TX</p>
+                                    <p className="text-[0.92rem] font-bold text-slate-800 leading-snug">Base Delivery Payout</p>
+                                    <p className="text-[0.8rem] font-medium text-slate-400 mt-1">Standard contracted rate</p>
                                   </div>
-                                  <p className="text-[1rem] font-black tracking-tight text-slate-800 shrink-0">${freightAmt}</p>
-                                </div>
-                                <div className="flex items-center gap-8 mt-3">
-                                  <span className="text-[0.78rem] text-slate-400">Qty: <span className="font-semibold text-slate-600">1</span></span>
-                                  <span className="text-[0.78rem] text-slate-400">Rate: <span className="font-semibold text-slate-600">${freightAmt}</span></span>
-                                  <span className="text-[0.78rem] text-slate-400">Total: <span className="font-semibold text-slate-600">${freightAmt}</span></span>
+                                  <p className="text-[1rem] font-black tracking-tight text-slate-800 shrink-0">${basePayout}</p>
                                 </div>
                               </div>
 
                               {/* Fuel Surcharge */}
                               <div className="flex items-start justify-between p-5 border-b border-slate-100">
                                 <div>
-                                  <p className="text-[0.92rem] font-bold text-slate-800">Fuel Surcharge</p>
-                                  <p className="text-[0.8rem] font-medium text-slate-400 mt-1">15% of base rate</p>
+                                  <p className="text-[0.92rem] font-bold text-slate-800">Safety Bonus</p>
+                                  <p className="text-[0.8rem] font-medium text-slate-400 mt-1">Defect-free inspection</p>
                                 </div>
-                                <p className="text-[1rem] font-black tracking-tight text-slate-800 shrink-0">${fuelAmt}</p>
+                                <p className="text-[1rem] font-black tracking-tight text-slate-800 shrink-0">${safetyBonus}</p>
                               </div>
 
                               {/* Accessorial Charges */}
                               <div className="flex items-start justify-between p-5">
                                 <div>
-                                  <p className="text-[0.92rem] font-bold text-slate-800">Accessorial Charges</p>
-                                  <p className="text-[0.8rem] font-medium text-slate-400 mt-1">Detention, loading assistance</p>
+                                  <p className="text-[0.92rem] font-bold text-slate-800">Detention Pay</p>
+                                  <p className="text-[0.8rem] font-medium text-slate-400 mt-1">Overtime compensation</p>
                                 </div>
-                                <p className="text-[1rem] font-black tracking-tight text-slate-800 shrink-0">${accessorialAmt}</p>
+                                <p className="text-[1rem] font-black tracking-tight text-slate-800 shrink-0">${detentionPay}</p>
                               </div>
                             </div>
                           </div>
 
                           {/* Totals (plain text, no card) */}
                           <div className="mb-8 px-1">
-                            <div className="flex items-center justify-between py-2">
-                              <p className="text-[0.88rem] font-medium text-slate-400">Subtotal:</p>
-                              <p className="text-[0.95rem] font-bold text-slate-800">${subtotal}</p>
-                            </div>
-                            <div className="flex items-center justify-between py-2">
-                              <p className="text-[0.88rem] font-medium text-slate-400">Tax ({taxRate}%):</p>
-                              <p className="text-[0.95rem] font-bold text-slate-800">${taxAmt}</p>
-                            </div>
                             <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-200">
-                              <p className="text-[1.1rem] font-black text-slate-900">Total:</p>
+                              <p className="text-[1.1rem] font-black text-slate-900">Total Payout:</p>
                               <p className="text-[1.35rem] font-black tracking-tight text-slate-900">${total}</p>
                             </div>
                           </div>
 
-                          {/* Customer Billing Profile */}
-                          <div className="mb-8">
-                            <h3 className="text-[1.1rem] font-bold tracking-tight text-slate-900 mb-4">Customer Billing Profile</h3>
-                            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+                        </div>
 
-                              {/* Billing Address */}
-                              <div className="p-5 border-b border-slate-100">
-                                <p className="text-[0.92rem] font-bold text-slate-800 mb-2">Billing Address</p>
-                                <p className="text-[0.85rem] leading-relaxed text-slate-500">
-                                  1245 Technology Blvd<br />
-                                  {selInvoice.customerAddress || 'Austin, TX'} 78759<br />
-                                  United States
-                                </p>
+                        {/* Sticky Payment Footer */}
+                        <div className="shrink-0 border-t border-slate-200 bg-white px-6 pt-4 pb-5">
+                          {selInvoice.status === 'Awaiting Payout' ? (
+                            <>
+                              <p className="text-[0.72rem] font-bold text-slate-500 uppercase tracking-widest mb-3">Select Payment Method</p>
+                              <div className="flex flex-col gap-2 mb-4">
+                                {[
+                                  { id: 'ACH', label: 'ACH Direct Deposit', sub: 'Bank transfer (1–2 business days)', icon: <Wallet className="h-4 w-4" strokeWidth={2.5} /> },
+                                  { id: 'Wire', label: 'Wire Transfer', sub: 'Same-day settlement', icon: <ArrowRight className="h-4 w-4" strokeWidth={2.5} /> },
+                                  { id: 'Check', label: 'Physical Check', sub: 'Mailed within 3–5 business days', icon: <FileText className="h-4 w-4" strokeWidth={2.5} /> },
+                                ].map(method => (
+                                  <button
+                                    key={method.id}
+                                    onClick={() => setSelectedPayMethod(method.id)}
+                                    className={`flex items-center gap-3 w-full rounded-xl border px-4 py-3 text-left transition-all ${selectedPayMethod === method.id
+                                        ? 'border-slate-900 bg-slate-900 text-white shadow-md'
+                                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                                      }`}
+                                  >
+                                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${selectedPayMethod === method.id ? 'bg-white/20' : 'bg-slate-100'
+                                      }`}>
+                                      {method.icon}
+                                    </span>
+                                    <span className="flex-1 min-w-0">
+                                      <span className="block text-[0.85rem] font-bold leading-tight">{method.label}</span>
+                                      <span className={`block text-[0.72rem] mt-0.5 ${selectedPayMethod === method.id ? 'text-white/70' : 'text-slate-400'}`}>{method.sub}</span>
+                                    </span>
+                                    {selectedPayMethod === method.id && (
+                                      <ClipboardCheck className="h-4 w-4 shrink-0 text-white" strokeWidth={2.5} />
+                                    )}
+                                  </button>
+                                ))}
                               </div>
-
-                              {/* Payment Methods */}
-                              <div className="p-5 border-b border-slate-100">
-                                <p className="text-[0.92rem] font-bold text-slate-800 mb-3">Payment Methods</p>
-                                <div className="flex flex-col gap-2.5">
-                                  <div className="flex items-center gap-2.5">
-                                    <div className="flex h-6 w-8 items-center justify-center rounded bg-blue-100">
-                                      <DollarSign className="h-3.5 w-3.5 text-blue-600" strokeWidth={2.5} />
-                                    </div>
-                                    <span className="text-[0.85rem] text-slate-600">**** **** **** 4532</span>
-                                    <span className="text-[0.75rem] font-medium text-slate-400">(Primary)</span>
-                                  </div>
-                                  <div className="flex items-center gap-2.5">
-                                    <div className="flex h-6 w-8 items-center justify-center rounded bg-emerald-100">
-                                      <Wallet className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2.5} />
-                                    </div>
-                                    <span className="text-[0.85rem] text-slate-600">ACH - ****1847</span>
-                                  </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  alert(`✅ Payment of ${selInvoice.amount} sent to ${selInvoice.driverName} via ${selectedPayMethod === 'ACH' ? 'ACH Direct Deposit' : selectedPayMethod === 'Wire' ? 'Wire Transfer' : 'Physical Check'}.`);
+                                  setSelectedInvoiceId(null);
+                                }}
+                                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3.5 text-[0.95rem] font-bold text-white shadow-md hover:bg-slate-800 hover:shadow-lg transition-all"
+                              >
+                                Pay {selInvoice.amount} <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ecfdf5]">
+                                  <ClipboardCheck className="h-3.5 w-3.5 text-[#10b981]" strokeWidth={2.5} />
                                 </div>
+                                <p className="text-[0.8rem] font-bold text-[#10b981]">Settled via {selInvoice.paymentMethod || 'ACH'}</p>
                               </div>
-
-                              {/* Payment Terms */}
-                              <div className="p-5">
-                                <p className="text-[0.92rem] font-bold text-slate-800 mb-2">Payment Terms</p>
-                                <p className="text-[0.85rem] text-slate-600">Net 30 days</p>
-                                <p className="text-[0.82rem] text-slate-400 mt-0.5">Credit Limit: $100,000.00</p>
-                              </div>
-
-                            </div>
-                          </div>
-
-                          {/* Payment History */}
-                          <div className="mb-8">
-                            <h3 className="text-[1.1rem] font-bold tracking-tight text-slate-900 mb-4">Payment History</h3>
-                            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-
-                              {/* Payment Overdue */}
-                              <div className="flex items-start justify-between p-5 border-b border-slate-100 bg-[#fef2f2]/40">
-                                <div>
-                                  <p className="text-[0.92rem] font-bold text-[#dc2626]">Payment Overdue</p>
-                                  <p className="text-[0.8rem] font-medium text-slate-400 mt-1">No payment received for this invoice</p>
-                                </div>
-                                <span className="text-[0.85rem] font-bold text-[#dc2626] shrink-0">45 days</span>
-                              </div>
-
-                              {/* Previous Payment */}
-                              <div className="flex items-start justify-between p-5">
-                                <div>
-                                  <p className="text-[0.92rem] font-bold text-slate-800">Previous Payment</p>
-                                  <p className="text-[0.8rem] font-medium text-slate-400 mt-1">INV-2024-345: $19,250.00 – Paid on time</p>
-                                </div>
-                                <span className="text-[0.85rem] font-semibold text-slate-500 shrink-0">Nov 8, 2024</span>
-                              </div>
-
-                            </div>
-                          </div>
-
-                          {/* Disputes */}
-                          <div>
-                            <h3 className="text-[1.1rem] font-bold tracking-tight text-slate-900 mb-4">Disputes</h3>
-                            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-                              <div className="flex items-center justify-between p-5 bg-[#fefce8]/40">
-                                <p className="text-[0.92rem] font-bold text-[#b45309]">Dispute Open</p>
-                                <span className="inline-flex items-center rounded-full bg-[#ecfdf5] px-3 py-1 text-[0.78rem] font-bold text-[#10b981]">Open</span>
-                              </div>
-                            </div>
-                          </div>
-
+                              <button className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#ecfdf5] border border-[#dcfce7] px-4 py-3.5 text-[0.95rem] font-bold text-[#10b981] hover:bg-[#dcfce7] transition-all">
+                                View Transfer Log <ClipboardCheck className="h-4 w-4" strokeWidth={2.5} />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </aside>
                     );
