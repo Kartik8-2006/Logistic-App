@@ -23,14 +23,41 @@ const ensureStore = () => {
 }
 
 export const listSharedLiveBids = () => {
+	const { bids } = readStore()
+	return bids
+}
+
+const readStore = () => {
 	ensureStore()
 
 	try {
 		const raw = fs.readFileSync(sharedFilePath, 'utf-8')
 		const parsed = JSON.parse(raw)
-
-		return Array.isArray(parsed?.bids) ? parsed.bids : []
+		if (Array.isArray(parsed?.bids)) {
+			return {
+				bids: parsed.bids,
+			}
+		}
 	} catch {
-		return []
+		// Ignore read/parse failures and fallback to empty store.
 	}
+
+	return { ...emptyStore }
+}
+
+const writeStore = (store) => {
+	ensureStore()
+	fs.writeFileSync(sharedFilePath, JSON.stringify(store, null, 2), 'utf-8')
+}
+
+export const upsertSharedLiveBid = (bid) => {
+	const store = readStore()
+	const nextBids = [
+		bid,
+		...store.bids.filter((existingBid) => existingBid?.id !== bid?.id),
+	]
+
+	writeStore({ bids: nextBids })
+
+	return nextBids
 }

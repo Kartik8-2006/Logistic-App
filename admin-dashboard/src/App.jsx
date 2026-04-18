@@ -49,6 +49,7 @@ import {
   TrendingUp,
   History,
   RefreshCcw,
+  Trash2,
   Eye,
 } from 'lucide-react'
 
@@ -959,6 +960,8 @@ function App() {
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null)
   const [billingCurrentPage, setBillingCurrentPage] = useState(1)
   const [selectedReportId, setSelectedReportId] = useState(null)
+  const [deletingUserId, setDeletingUserId] = useState('')
+  const [adminActionMessage, setAdminActionMessage] = useState('')
 
   const [routeFilters, setRouteFilters] = useState({
   })
@@ -989,6 +992,45 @@ function App() {
     loadDashboard()
   }, [])
 
+  const handleDeleteUserProfile = async (userId, label) => {
+    const normalizedUserId = String(userId || '').trim()
+    if (!normalizedUserId) {
+      return
+    }
+
+    const confirmed = window.confirm(`Delete profile for ${label}? This cannot be undone.`)
+    if (!confirmed) {
+      return
+    }
+
+    setDeletingUserId(normalizedUserId)
+
+    try {
+      const response = await fetch(`/api/admin/users/${encodeURIComponent(normalizedUserId)}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete profile')
+      }
+
+      setDashboardData((previous) => ({
+        ...previous,
+        drivers: (previous?.drivers || []).filter((entry) => String(entry?.userId || '') !== normalizedUserId),
+        supabaseWarehouses: (previous?.supabaseWarehouses || []).filter((entry) => String(entry?.userId || '') !== normalizedUserId),
+      }))
+
+      setSelectedDriverId(null)
+      setSelectedWarehouseId(null)
+
+      setAdminActionMessage(`Deleted profile: ${label}`)
+    } catch {
+      setAdminActionMessage(`Unable to delete profile: ${label}`)
+    } finally {
+      setDeletingUserId('')
+    }
+  }
+
   const metrics = useMemo(() => dashboardData.metrics ?? [], [dashboardData.metrics])
   const vehicles = useMemo(() => dashboardData.vehicles ?? [], [dashboardData.vehicles])
   const mapSummary = useMemo(() => dashboardData.mapSummary ?? [], [dashboardData.mapSummary])
@@ -1000,6 +1042,7 @@ function App() {
   const fleet = useMemo(() => dashboardData.fleet ?? [], [dashboardData.fleet])
   const routesTracking = useMemo(() => dashboardData.routesTracking ?? [], [dashboardData.routesTracking])
   const routeSummary = useMemo(() => dashboardData.routeSummary ?? [], [dashboardData.routeSummary])
+  const lifecycleTimeline = useMemo(() => dashboardData.lifecycleTimeline ?? [], [dashboardData.lifecycleTimeline])
 
   const routeStatusOptions = ['All Status', 'On-time', 'Delayed', 'Critical Delay', 'Active']
   const routeTimeRangeOptions = ['Today', 'Yesterday', 'Last 7 Days']
@@ -2689,6 +2732,9 @@ function App() {
                   <div className="flex flex-col justify-between gap-4 px-6 py-4 sm:flex-row sm:items-center lg:px-8">
                     <div>
                       <h2 className="text-2xl font-bold tracking-tight text-slate-800">Driver Management</h2>
+                      {adminActionMessage && (
+                        <p className="mt-1 text-xs font-semibold text-slate-500">{adminActionMessage}</p>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       <button type="button" className="inline-flex items-center gap-2 rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 transition-colors">
@@ -2856,9 +2902,24 @@ function App() {
                               <div className="text-[0.72rem] text-slate-500 mt-0.5 pl-5">{driver.currentLocation.terminal}</div>
                             </td>
                             <td className="px-6 py-4 text-center">
-                              <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
-                                <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={2} />
-                              </button>
+                              {driver.userId ? (
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation()
+                                    void handleDeleteUserProfile(driver.userId, driver.name)
+                                  }}
+                                  disabled={deletingUserId === driver.userId}
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                                  title="Delete profile"
+                                >
+                                  <Trash2 className="h-[16px] w-[16px]" strokeWidth={2} />
+                                </button>
+                              ) : (
+                                <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition">
+                                  <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={2} />
+                                </button>
+                              )}
                             </td>
                           </tr>
                         ))
@@ -3573,7 +3634,7 @@ function App() {
                 { title: 'Today\'s Throughput', value: '847 / 1,205', iconTone: 'bg-[#a855f7] text-white', icon: Truck, bgCard: 'bg-[#faf5ff]', textTone: 'text-[#4c1d95]', subTextTone: 'text-[#a855f7]' }
               ];
 
-              const warehousesList = [
+              const staticWarehousesList = [
                 {
                   id: 1, name: 'Chicago Distribution Center', address: '1245 Industrial Blvd, Chicago, IL 60601',
                   status: 'Active', statusBg: 'bg-[#ebfdf5] text-[#10b981]',
@@ -3630,6 +3691,14 @@ function App() {
                 }
               ];
 
+              const supabaseWarehouses = Array.isArray(dashboardData?.supabaseWarehouses)
+                ? dashboardData.supabaseWarehouses
+                : [];
+              const warehousesList = [...staticWarehousesList, ...supabaseWarehouses];
+              const lifecycleItems = Array.isArray(lifecycleTimeline)
+                ? lifecycleTimeline.slice(0, 4)
+                : [];
+
               return (
                 <section className="flex h-[calc(100vh-85px)] w-full overflow-hidden bg-[#fafafb] relative">
                   {/* Main Content Area */}
@@ -3641,6 +3710,9 @@ function App() {
                         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <h2 className="text-[1.65rem] font-bold tracking-tight text-slate-900">Warehouses / Hubs</h2>
+                            {adminActionMessage && (
+                              <p className="mt-1 text-xs font-semibold text-slate-500">{adminActionMessage}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-4">
                             <button className="flex items-center gap-2 rounded-xl bg-[#3b82f6] px-5 py-2 text-[0.85rem] font-bold text-white transition hover:bg-blue-700 shadow-sm">
@@ -3726,9 +3798,25 @@ function App() {
                                   <h3 className="text-[1.1rem] leading-tight font-bold tracking-tight text-slate-800">{wh.name}</h3>
                                   <p className="mt-1 text-[0.8rem] text-slate-400">{wh.address}</p>
                                 </div>
-                                <span className={`inline-flex shrink-0 items-center rounded bg-slate-50 px-2 py-0.5 text-[0.7rem] font-bold ${wh.statusBg}`}>
-                                  {wh.status}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className={`inline-flex shrink-0 items-center rounded bg-slate-50 px-2 py-0.5 text-[0.7rem] font-bold ${wh.statusBg}`}>
+                                    {wh.status}
+                                  </span>
+                                  {wh.userId ? (
+                                    <button
+                                      type="button"
+                                      onClick={(event) => {
+                                        event.stopPropagation()
+                                        void handleDeleteUserProfile(wh.userId, wh.name)
+                                      }}
+                                      disabled={deletingUserId === wh.userId}
+                                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition disabled:cursor-not-allowed disabled:opacity-50"
+                                      title="Delete profile"
+                                    >
+                                      <Trash2 className="h-4 w-4" strokeWidth={2} />
+                                    </button>
+                                  ) : null}
+                                </div>
                               </div>
 
                               <div className="mb-[22px]">
@@ -3816,7 +3904,7 @@ function App() {
                             <div className="grid grid-cols-2 gap-y-5 gap-x-4 mb-2">
                               <div>
                                 <p className="text-[0.7rem] uppercase tracking-wider font-bold text-slate-400 mb-1">Total Capacity:</p>
-                                <p className="text-[0.95rem] font-bold text-slate-800">125,000 sq ft</p>
+                                <p className="text-[0.95rem] font-bold text-slate-800">{ws.companyProfile?.weeklyCapacityLoads ? `${ws.companyProfile.weeklyCapacityLoads} loads/week` : 'Not shared'}</p>
                               </div>
                               <div>
                                 <p className="text-[0.7rem] uppercase tracking-wider font-bold text-slate-400 mb-1">Utilization:</p>
@@ -3824,11 +3912,19 @@ function App() {
                               </div>
                               <div>
                                 <p className="text-[0.7rem] uppercase tracking-wider font-bold text-slate-400 mb-1">Dock Doors:</p>
-                                <p className="text-[0.95rem] font-bold text-slate-800">16 Total</p>
+                                <p className="text-[0.95rem] font-bold text-slate-800">{ws.companyProfile?.dockDoors ? `${ws.companyProfile.dockDoors} Total` : 'Pending setup'}</p>
                               </div>
                               <div>
                                 <p className="text-[0.7rem] uppercase tracking-wider font-bold text-slate-400 mb-1">Status:</p>
                                 <span className="inline-flex items-center rounded bg-[#ebfdf5] px-2 py-0.5 text-[0.7rem] font-bold text-[#10b981]">{ws.status}</span>
+                              </div>
+                              <div>
+                                <p className="text-[0.7rem] uppercase tracking-wider font-bold text-slate-400 mb-1">Ops Email:</p>
+                                <p className="text-[0.88rem] font-bold text-slate-800 break-all">{ws.companyProfile?.operationsEmail || 'Not shared'}</p>
+                              </div>
+                              <div>
+                                <p className="text-[0.7rem] uppercase tracking-wider font-bold text-slate-400 mb-1">Payment Terms:</p>
+                                <p className="text-[0.95rem] font-bold text-slate-800">{ws.companyProfile?.preferredPaymentTerms || 'Net 15'}</p>
                               </div>
                             </div>
                           </div>
@@ -3881,11 +3977,11 @@ function App() {
                               <table className="w-full text-left border-separate border-spacing-y-2 border-spacing-x-2" style={{ minWidth: '320px' }}>
                                 <thead>
                                   <tr>
-                                    <th className="text-[0.65rem] font-bold text-slate-400 font-medium w-9 pb-2">Time</th>
-                                    <th className="text-[0.7rem] text-center font-bold text-slate-400 font-medium pb-2">Dock 1-4</th>
-                                    <th className="text-[0.7rem] text-center font-bold text-slate-400 font-medium pb-2">Dock 5-8</th>
-                                    <th className="text-[0.7rem] text-center font-bold text-slate-400 font-medium pb-2">Dock 9-12</th>
-                                    <th className="text-[0.7rem] text-center font-bold text-slate-400 font-medium pb-2">Dock 13-16</th>
+                                    <th className="text-[0.65rem] text-slate-400 w-9 pb-2">Time</th>
+                                    <th className="text-[0.7rem] text-center text-slate-400 pb-2">Dock 1-4</th>
+                                    <th className="text-[0.7rem] text-center text-slate-400 pb-2">Dock 5-8</th>
+                                    <th className="text-[0.7rem] text-center text-slate-400 pb-2">Dock 9-12</th>
+                                    <th className="text-[0.7rem] text-center text-slate-400 pb-2">Dock 13-16</th>
                                   </tr>
                                 </thead>
                                 <tbody className="text-[0.65rem] font-bold">
@@ -4033,27 +4129,25 @@ function App() {
                           <div className="p-6">
                             <h4 className="text-[0.95rem] font-bold tracking-tight text-slate-800 mb-4">Linked Loads Status</h4>
                             <div className="space-y-3">
-                              <div className="rounded-xl bg-[#ebfdf5] text-emerald-700 p-4 flex items-start gap-3">
-                                <div className="h-2 w-2 rounded-full bg-[#10b981] shrink-0 mt-1.5" />
-                                <div>
-                                  <p className="text-[0.85rem] font-bold mb-0.5 text-[#064e3b]">LOAD-2024-4521</p>
-                                  <p className="text-[0.7rem] font-medium text-[#047857]">Assigned • ETA: 1:45 PM</p>
+                              {lifecycleItems.length > 0 ? lifecycleItems.map((entry) => (
+                                <div key={entry.bidId} className="rounded-xl bg-[#eff6ff] text-blue-700 p-4 flex items-start gap-3">
+                                  <div className="h-2 w-2 rounded-full bg-[#3b82f6] shrink-0 mt-1.5" />
+                                  <div>
+                                    <p className="text-[0.85rem] font-bold mb-0.5 text-[#1e3a8a]">{entry.loadId}</p>
+                                    <p className="text-[0.7rem] font-medium text-[#1d4ed8]">Driver: {entry.assignedDriverName || 'Unassigned'}</p>
+                                    <p className="text-[0.68rem] font-medium text-slate-500 mt-0.5">
+                                      Destination: {entry.destinationReachedAt ? new Date(entry.destinationReachedAt).toLocaleString() : 'Pending'}
+                                    </p>
+                                    <p className="text-[0.68rem] font-medium text-slate-500 mt-0.5">
+                                      Payment: {entry.paymentReleasedAt ? new Date(entry.paymentReleasedAt).toLocaleString() : 'Pending'}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="rounded-xl bg-[#eff6ff] text-blue-700 p-4 flex items-start gap-3">
-                                <div className="h-2 w-2 rounded-full bg-[#3b82f6] shrink-0 mt-1.5" />
-                                <div>
-                                  <p className="text-[0.85rem] font-bold mb-0.5 text-[#1e3a8a]">LOAD-2024-4522</p>
-                                  <p className="text-[0.7rem] font-medium text-[#1d4ed8]">In-Transit • ETA: 3:20 PM</p>
+                              )) : (
+                                <div className="rounded-xl bg-slate-50 p-4 text-[0.75rem] font-semibold text-slate-500">
+                                  No lifecycle timestamps available yet.
                                 </div>
-                              </div>
-                              <div className="rounded-xl bg-[#fef2f2] text-red-700 p-4 flex items-start gap-3">
-                                <div className="h-2 w-2 rounded-full bg-[#ef4444] shrink-0 mt-1.5" />
-                                <div>
-                                  <p className="text-[0.85rem] font-bold mb-0.5 text-[#7f1d1d]">LOAD-2024-4523</p>
-                                  <p className="text-[0.7rem] font-medium text-[#b91c1c]">Delayed • New ETA: 5:15 PM</p>
-                                </div>
-                              </div>
+                              )}
                             </div>
                           </div>
 

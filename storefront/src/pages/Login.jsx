@@ -3,7 +3,159 @@ import { Eye, EyeOff, ChevronLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import truckImage from "../assets/auth/caleb-ruiter-EmEQ6kK_5P0-unsplash.jpg";
 
-export default function Login({ onClose, onNavigateToSignup }) {
+const AUTH_USERS_KEY = "manifest-auth-users";
+const AUTH_SESSION_KEY = "manifest-auth-session";
+
+const DRIVER_DASHBOARD_URL = String(import.meta.env.VITE_DRIVER_DASHBOARD_URL || "http://localhost:5174").trim();
+const COMPANY_DASHBOARD_URL = String(import.meta.env.VITE_COMPANY_DASHBOARD_URL || "http://localhost:5173").trim();
+
+const seedUsers = [
+  {
+    fullName: "Driver Demo",
+    email: "driver@manifestdrives.com",
+    password: "driver123",
+    role: "driver",
+  },
+  {
+    fullName: "Company Demo",
+    email: "company@manifestdrives.com",
+    password: "company123",
+    role: "company_manager",
+  },
+];
+
+const normalizeEmail = (value) => String(value ?? "").trim().toLowerCase();
+
+const RESERVED_EMAIL_ROLE_MAP = {
+  "company@manifestdrives.com": "company_manager",
+  "driver@manifestdrives.com": "driver",
+};
+
+const RESERVED_EMAIL_DASHBOARD_MAP = {
+  "company@manifestdrives.com": COMPANY_DASHBOARD_URL,
+  "driver@manifestdrives.com": DRIVER_DASHBOARD_URL,
+};
+
+const getEffectiveRole = (email, fallbackRole = "company_manager") =>
+  RESERVED_EMAIL_ROLE_MAP[normalizeEmail(email)] || (fallbackRole === "driver" ? "driver" : "company_manager");
+
+const getUserKey = (user) => `${normalizeEmail(user.email)}|${getEffectiveRole(user.email, user.role)}`;
+
+const getDashboardUrlByRole = (role) => {
+  if (role === "driver") {
+    return DRIVER_DASHBOARD_URL;
+  }
+
+  return COMPANY_DASHBOARD_URL;
+};
+
+const getDashboardUrlByEmailOrRole = (email, role) => {
+  const normalizedEmail = normalizeEmail(email);
+  return RESERVED_EMAIL_DASHBOARD_MAP[normalizedEmail] || getDashboardUrlByRole(role);
+};
+
+const fetchRemoteAuthUsers = async () => {
+  try {
+    const response = await fetch("/api/auth/users");
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = await response.json();
+    if (!Array.isArray(payload?.users)) {
+      return [];
+    }
+
+    return payload.users;
+  } catch {
+    return [];
+  }
+};
+
+const saveRemoteAuthUser = async (user) => {
+  try {
+    const response = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+const getAuthUsers = async () => {
+  const merged = new Map();
+  seedUsers.forEach((user) => {
+    merged.set(getUserKey(user), user);
+  });
+
+  const remoteUsers = await fetchRemoteAuthUsers();
+  remoteUsers.forEach((user) => {
+    if (!user?.email || !user?.password || !user?.role) {
+      return;
+    }
+
+    merged.set(getUserKey(user), {
+      fullName: String(user.fullName || "User").trim(),
+      email: normalizeEmail(user.email),
+      password: String(user.password),
+      role: getEffectiveRole(user.email, user.role),
+    });
+  });
+
+  try {
+    const raw = localStorage.getItem(AUTH_USERS_KEY);
+    if (raw) {
+      const storedUsers = JSON.parse(raw);
+      if (Array.isArray(storedUsers)) {
+        storedUsers.forEach((user) => {
+          if (!user?.email || !user?.password || !user?.role) {
+            return;
+          }
+
+          merged.set(getUserKey(user), {
+            fullName: String(user.fullName || "User").trim(),
+            email: normalizeEmail(user.email),
+            password: String(user.password),
+            role: getEffectiveRole(user.email, user.role),
+          });
+        });
+      }
+    }
+  } catch {
+    // If local storage parsing fails, continue with seeded users only.
+  }
+
+  return Array.from(merged.values());
+};
+
+const saveAuthUsers = (users) => {
+  localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+};
+
+const saveSessionAndRedirect = (user) => {
+  const effectiveRole = getEffectiveRole(user.email, user.role);
+  const targetDashboardUrl = getDashboardUrlByEmailOrRole(user.email, effectiveRole);
+
+  localStorage.setItem(
+    AUTH_SESSION_KEY,
+    JSON.stringify({
+      fullName: user.fullName,
+      email: normalizeEmail(user.email),
+      role: effectiveRole,
+      loggedInAt: new Date().toISOString(),
+    }),
+  );
+
+  window.location.assign(targetDashboardUrl);
+};
+
+export default function Login({ onClose }) {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -14,26 +166,92 @@ export default function Login({ onClose, onNavigateToSignup }) {
   const [role, setRole] = useState("driver");
   const [rememberMe, setRememberMe] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [authError, setAuthError] = useState("");
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login", { email, password, rememberMe });
-    setEmail("");
-    setPassword("");
-  };
 
-  const handleSignupSubmit = (e) => {
-    e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+    const users = await getAuthUsers();
+    const normalizedLoginEmail = normalizeEmail(email);
+    const forcedRole = RESERVED_EMAIL_ROLE_MAP[normalizedLoginEmail] || null;
+    const effectiveLoginRole = getEffectiveRole(normalizedLoginEmail, role);
+    const matchedUser = users.find(
+      (user) =>
+        normalizeEmail(user.email) === normalizedLoginEmail
+        && (forcedRole ? true : user.role === effectiveLoginRole),
+    );
+
+    if (!matchedUser) {
+      setAuthError("No account was found for this email.");
       return;
     }
-    console.log("Sign up", { fullName, email, password, agreeTerms });
+
+    if (matchedUser.password !== password) {
+      setAuthError("Incorrect password. Please try again.");
+      return;
+    }
+
+    setAuthError("");
+
+    if (!rememberMe) {
+      localStorage.removeItem(AUTH_USERS_KEY);
+      saveAuthUsers(users);
+    }
+
+    saveSessionAndRedirect({
+      ...matchedUser,
+      role: effectiveLoginRole,
+    });
+  };
+
+  const handleSignupSubmit = async (e) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      setAuthError("Passwords do not match.");
+      return;
+    }
+
+    if (!agreeTerms) {
+      setAuthError("Please accept the terms to continue signing up.");
+      return;
+    }
+
+    const users = await getAuthUsers();
+    const normalizedSignupEmail = normalizeEmail(email);
+    const effectiveSignupRole = getEffectiveRole(normalizedSignupEmail, role);
+    const userAlreadyExists = users.some(
+      (user) => user.role === effectiveSignupRole && normalizeEmail(user.email) === normalizedSignupEmail,
+    );
+
+    if (userAlreadyExists) {
+      setAuthError("This email is already registered for the selected role. Please log in.");
+      return;
+    }
+
+    const newUser = {
+      fullName: fullName.trim(),
+      email: normalizedSignupEmail,
+      password,
+      role: effectiveSignupRole,
+    };
+
+    const savedRemotely = await saveRemoteAuthUser(newUser);
+    if (!savedRemotely) {
+      setAuthError("Unable to sync signup with Supabase. Please retry.");
+      return;
+    }
+
+    saveAuthUsers([newUser, ...users]);
+    setAuthError("");
+
     setFullName("");
     setEmail("");
     setPassword("");
     setConfirmPassword("");
     setAgreeTerms(false);
+
+    saveSessionAndRedirect(newUser);
   };
 
   return (
@@ -133,21 +351,9 @@ export default function Login({ onClose, onNavigateToSignup }) {
                   </div>
                 </div>
 
-                {/* Role Selection */}
-                <div>
-                  <label className="block font-inter text-sm font-medium text-gray-700 mb-2">
-                    Select Role<span className="text-red-600">*</span>
-                  </label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-sm font-inter text-gray-900 outline-none transition focus:border-red-600 focus:ring-1 focus:ring-red-200 appearance-none cursor-pointer bg-white"
-                    required
-                  >
-                    <option value="driver">Driver</option>
-                    <option value="company_manager">Company Manager</option>
-                  </select>
-                </div>
+                {authError ? (
+                  <p className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{authError}</p>
+                ) : null}
 
                 {/* Remember Me Checkbox */}
                 <div className="flex items-center">
@@ -186,6 +392,7 @@ export default function Login({ onClose, onNavigateToSignup }) {
                       type="button"
                       onClick={() => {
                         setIsSignup(true);
+                        setAuthError("");
                         setEmail("");
                         setPassword("");
                         setRole("driver");
@@ -295,6 +502,10 @@ export default function Login({ onClose, onNavigateToSignup }) {
                 </select>
               </div>
 
+              {authError ? (
+                <p className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{authError}</p>
+              ) : null}
+
               {/* Terms Checkbox */}
               <div className="flex items-start">
                 <input
@@ -325,6 +536,7 @@ export default function Login({ onClose, onNavigateToSignup }) {
                     type="button"
                     onClick={() => {
                       setIsSignup(false);
+                      setAuthError("");
                       setFullName("");
                       setEmail("");
                       setPassword("");

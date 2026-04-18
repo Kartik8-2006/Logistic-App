@@ -767,6 +767,24 @@ const formatCountdownClock = (totalSeconds) => {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
+const formatBidRemainingTime = (totalSeconds) => {
+  const safeSeconds = Math.max(0, Math.round(totalSeconds))
+
+  if (safeSeconds >= 24 * 60 * 60) {
+    const days = Math.floor(safeSeconds / (24 * 60 * 60))
+    const hours = Math.floor((safeSeconds % (24 * 60 * 60)) / 3600)
+    return `${days}d ${hours}h`
+  }
+
+  if (safeSeconds > 60 * 60) {
+    const hours = Math.floor(safeSeconds / 3600)
+    const minutes = Math.floor((safeSeconds % 3600) / 60)
+    return `${hours}h ${minutes}m`
+  }
+
+  return formatCountdownClock(safeSeconds)
+}
+
 const formatPortalTimestamp = (timestamp) => {
   if (!Number.isFinite(timestamp)) {
     return '--'
@@ -819,6 +837,17 @@ const buildPortalBidSchedule = (seedTimestamp, index) => {
     biddingStartAt,
     biddingEndAt,
   }
+}
+
+const LIVE_BID_EXPIRY_REMOVAL_DELAY_MS = 5 * 60 * 1000
+
+const shouldKeepLiveBidVisible = (bid, nowTimestamp) => {
+  const biddingEndAt = Number(bid?.biddingEndAt)
+  if (!Number.isFinite(biddingEndAt)) {
+    return true
+  }
+
+  return nowTimestamp < (biddingEndAt + LIVE_BID_EXPIRY_REMOVAL_DELAY_MS)
 }
 
 const getInitials = (name) => {
@@ -943,6 +972,10 @@ const pickDriverSettingsSubset = (sourceSettings, fields) => {
 }
 
 const pickDriverProfileSettings = (sourceSettings) => pickDriverSettingsSubset(sourceSettings, DRIVER_PROFILE_FIELDS)
+const resolveDriverSettingsEmail = (sourceSettings) => {
+  const normalized = String(sourceSettings?.email || DRIVER_SETTINGS_DEFAULTS.email || '').trim().toLowerCase()
+  return normalized || 'driver@manifestdrives.com'
+}
 
 function App() {
   const [dashboardData, setDashboardData] = useState(fallbackData)
@@ -1038,6 +1071,8 @@ function App() {
   const [isPayoutEditing, setIsPayoutEditing] = useState(false)
   const [payoutDraft, setPayoutDraft] = useState(() => pickDriverSettingsSubset(settings, DRIVER_PAYOUT_FIELDS))
   const [settingsLastSavedAt, setSettingsLastSavedAt] = useState(null)
+  const [settingsSyncState, setSettingsSyncState] = useState('idle')
+  const [settingsSyncMessage, setSettingsSyncMessage] = useState('')
 
   const persistDriverSettings = (nextSettings) => {
     if (typeof window === 'undefined') {
@@ -1049,6 +1084,36 @@ function App() {
       setSettingsLastSavedAt(new Date().toISOString())
     } catch {
       // Ignore write failures silently so settings UI remains usable.
+    }
+  }
+
+  const syncDriverSettingsToServer = async (nextSettings) => {
+    const payload = {
+      email: resolveDriverSettingsEmail(nextSettings),
+      settings: nextSettings,
+    }
+
+    setSettingsSyncState('syncing')
+    setSettingsSyncMessage('Syncing settings...')
+
+    try {
+      const response = await fetch('/api/driver-settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to sync driver settings')
+      }
+
+      setSettingsSyncState('synced')
+      setSettingsSyncMessage('Settings synced to company dashboard.')
+    } catch {
+      setSettingsSyncState('error')
+      setSettingsSyncMessage('Settings saved locally, but server sync failed.')
     }
   }
 
@@ -1098,6 +1163,7 @@ function App() {
 
     setSettings(nextSettings)
     persistDriverSettings(nextSettings)
+    void syncDriverSettingsToServer(nextSettings)
     setIsProfileEditing(false)
   }
 
@@ -1119,6 +1185,7 @@ function App() {
 
     setSettings(nextSettings)
     persistDriverSettings(nextSettings)
+    void syncDriverSettingsToServer(nextSettings)
     setIsAvailabilityEditing(false)
   }
 
@@ -1140,6 +1207,7 @@ function App() {
 
     setSettings(nextSettings)
     persistDriverSettings(nextSettings)
+    void syncDriverSettingsToServer(nextSettings)
     setIsSafetyEditing(false)
   }
 
@@ -1161,6 +1229,7 @@ function App() {
 
     setSettings(nextSettings)
     persistDriverSettings(nextSettings)
+    void syncDriverSettingsToServer(nextSettings)
     setIsPayoutEditing(false)
   }
 
@@ -1175,6 +1244,7 @@ function App() {
 
     setSettings(nextSettings)
     persistDriverSettings(nextSettings)
+    void syncDriverSettingsToServer(nextSettings)
     setIsProfileEditing(false)
     setIsAvailabilityEditing(false)
     setIsSafetyEditing(false)
@@ -1215,6 +1285,7 @@ function App() {
   const previousDriverLivePointRef = useRef(null)
   const bidSheetInputRef = useRef(null)
   const previousLinkedBidCountRef = useRef(0)
+  const hasLinkedBidSyncInitializedRef = useRef(false)
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -1225,6 +1296,32 @@ function App() {
         }
         const data = await response.json()
         setDashboardData(data)
+
+        try {
+          const settingsResponse = await fetch(`/api/driver-settings?email=${encodeURIComponent(resolveDriverSettingsEmail(settings))}`)
+          if (!settingsResponse.ok) {
+            throw new Error('Failed to load synced settings')
+          }
+
+          const settingsPayload = await settingsResponse.json()
+          const syncedSettings = settingsPayload?.settings && typeof settingsPayload.settings === 'object'
+            ? {
+              ...DRIVER_SETTINGS_DEFAULTS,
+              ...settings,
+              ...settingsPayload.settings,
+            }
+            : null
+
+          if (syncedSettings) {
+            setSettings(syncedSettings)
+            persistDriverSettings(syncedSettings)
+            setSettingsSyncState('synced')
+            setSettingsSyncMessage('Synced with company profile settings.')
+          }
+        } catch {
+          setSettingsSyncState('error')
+          setSettingsSyncMessage('Using local settings. Sync endpoint unavailable.')
+        }
       } catch {
         setDashboardData(fallbackData)
       } finally {
@@ -1236,12 +1333,47 @@ function App() {
   }, [])
 
   useEffect(() => {
+    const buildBidStartTimestamp = (dateText, timeText, dateTimeText) => {
+      const normalizedDateTime = String(dateTimeText ?? '').trim()
+      if (/^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(normalizedDateTime)) {
+        const dateTimeTimestamp = new Date(normalizedDateTime).getTime()
+        if (Number.isFinite(dateTimeTimestamp)) {
+          return dateTimeTimestamp
+        }
+      }
+
+      const normalizedDate = String(dateText ?? '').trim()
+      const normalizedTime = String(timeText ?? '').trim()
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(normalizedDate)) {
+        return null
+      }
+
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(normalizedTime)) {
+        return null
+      }
+
+      const timestamp = new Date(`${normalizedDate}T${normalizedTime}:00`).getTime()
+      return Number.isFinite(timestamp) ? timestamp : null
+    }
+
     const normalizeLinkedBid = (bid, index) => {
       const safeAskRate = Number.isFinite(Number(bid.askRate)) ? Number(bid.askRate) : 1200
       const safeLaneMiles = Number.isFinite(Number(bid.laneMiles)) ? Number(bid.laneMiles) : 420
       const safeFloorRate = Number.isFinite(Number(bid.floorRate)) ? Number(bid.floorRate) : Math.round(safeAskRate * 0.9)
-      const safeBiddingStart = Number.isFinite(Number(bid.biddingStartAt)) ? Number(bid.biddingStartAt) : Date.now() + (30 * 1000)
-      const safeBiddingEnd = Number.isFinite(Number(bid.biddingEndAt)) ? Number(bid.biddingEndAt) : safeBiddingStart + (2 * 60 * 60 * 1000)
+      const dateDerivedStart = buildBidStartTimestamp(
+        bid?.managerInput?.liveBidDate || bid?.pickupWindow,
+        bid?.managerInput?.liveBidTime || '11:00',
+        bid?.managerInput?.liveBidDateTime,
+      )
+      const safeBiddingStart = Number.isFinite(Number(bid?.auctionState?.opensAt))
+        ? Number(bid.auctionState.opensAt)
+        : dateDerivedStart
+          ?? (Number.isFinite(Number(bid.biddingStartAt)) ? Number(bid.biddingStartAt) : Date.now() + (30 * 1000))
+      const safeBiddingEnd = Number.isFinite(Number(bid?.auctionState?.closesAt))
+        ? Number(bid.auctionState.closesAt)
+        : Number.isFinite(Number(bid.biddingEndAt))
+          ? Number(bid.biddingEndAt)
+          : safeBiddingStart + (2 * 60 * 1000)
 
       return {
         id: bid.id || `BID-LINKED-${index + 1}`,
@@ -1278,6 +1410,8 @@ function App() {
         requiresTeamDriver: Boolean(bid.requiresTeamDriver),
         loadPhotos: Array.isArray(bid.loadPhotos) ? bid.loadPhotos : [],
         note: bid.note || 'New linked load posted by company manager.',
+        auctionState: bid.auctionState || null,
+        shipmentState: bid.shipmentState || null,
       }
     }
 
@@ -1293,13 +1427,15 @@ function App() {
 
         const previousCount = previousLinkedBidCountRef.current
         const nextCount = bids.length
+        const hasInitializedSync = hasLinkedBidSyncInitializedRef.current
 
-        if (previousCount > 0 && nextCount > previousCount) {
-          const newestBid = bids[0]
+        if (hasInitializedSync && nextCount > previousCount) {
+          const newestBid = [...bids].sort((a, b) => Number(b.portalPublishedAt || 0) - Number(a.portalPublishedAt || 0))[0]
           setBidActionMessage(`New load from manager: ${newestBid.lane} | Ask ${formatCurrencyValue(newestBid.askRate)}`)
         }
 
         previousLinkedBidCountRef.current = nextCount
+        hasLinkedBidSyncInitializedRef.current = true
         setLinkedLiveBids(bids)
       } catch {
         // Keep driver dashboard usable even if linked bid sync fails.
@@ -2152,8 +2288,13 @@ function App() {
       }
     })
 
-    return [...manualBids, ...linkedLiveBids, ...generatedBids]
-  }, [activeDispatchMiles, activeDriverDispatch.deliveryDate, activeDriverDispatch.deliveryTime, activeDriverDispatch.loadType, activeDriverDispatch.pickupDate, activeDriverDispatch.pickupTime, linkedLiveBids, manualBids, orders, portalBidSeedTime])
+    const combinedBids = [...manualBids, ...linkedLiveBids, ...generatedBids]
+
+    // Keep closed bids visible for 5 minutes, then drop them from Live Bids automatically.
+    return combinedBids.filter((bid) => shouldKeepLiveBidVisible(bid, manualAuctionNow))
+  }, [activeDispatchMiles, activeDriverDispatch.deliveryDate, activeDriverDispatch.deliveryTime, activeDriverDispatch.loadType, activeDriverDispatch.pickupDate, activeDriverDispatch.pickupTime, linkedLiveBids, manualAuctionNow, manualBids, orders, portalBidSeedTime])
+
+  const linkedBidIdSet = useMemo(() => new Set(linkedLiveBids.map((bid) => bid.id)), [linkedLiveBids])
 
   const bidTypeOptions = useMemo(() => ['All Types', ...new Set(liveBidRows.map((bid) => bid.bidType))], [liveBidRows])
   const bidUrgencyOptions = ['All Urgency', 'High', 'Medium', 'Low']
@@ -2235,11 +2376,11 @@ function App() {
     }
 
     return [...selectedBidManualAuction.participants].sort((left, right) => {
-      if (right.amount !== left.amount) {
-        return right.amount - left.amount
+      if (left.amount !== right.amount) {
+        return left.amount - right.amount
       }
 
-      return right.updatedAt - left.updatedAt
+      return left.updatedAt - right.updatedAt
     })
   }, [selectedBidManualAuction])
 
@@ -2255,10 +2396,10 @@ function App() {
     }
 
     if (!selectedBidManualAuction.isOpen) {
-      return `T-${formatCountdownClock(selectedBidManualAuction.opensInSeconds)}`
+      return `T-${formatBidRemainingTime(selectedBidManualAuction.opensInSeconds)}`
     }
 
-    return formatCountdownClock(selectedBidManualAuction.closesInSeconds)
+    return formatBidRemainingTime(selectedBidManualAuction.closesInSeconds)
   }, [selectedBidManualAuction])
 
   const selectedBidManualIsPreLive = Boolean(
@@ -2287,7 +2428,7 @@ function App() {
       return 0
     }
 
-    return Math.round(selectedBidManualLeader.amount - selectedBidManualDriverEntry.amount)
+    return Math.round(selectedBidManualDriverEntry.amount - selectedBidManualLeader.amount)
   }, [selectedBidManualDriverEntry, selectedBidManualLeader])
 
   const selectedBidManualWinner = useMemo(() => {
@@ -2383,11 +2524,11 @@ function App() {
           }
 
           const ranked = [...auction.participants].sort((left, right) => {
-            if (right.amount !== left.amount) {
-              return right.amount - left.amount
+            if (left.amount !== right.amount) {
+              return left.amount - right.amount
             }
 
-            return right.updatedAt - left.updatedAt
+            return left.updatedAt - right.updatedAt
           })
 
           nextState[bidId] = {
@@ -2472,7 +2613,12 @@ function App() {
   const driverWonShipments = useMemo(() => {
     return liveBidRows.filter((bid) => {
       const auction = manualAuctionByBidId[bid.id]
-      return auction?.winnerId === 'driver-self'
+      if (!auction?.winnerId || !Array.isArray(auction.participants)) {
+        return false
+      }
+
+      const winner = auction.participants.find((participant) => participant.id === auction.winnerId)
+      return Boolean(winner?.isDriver)
     })
   }, [liveBidRows, manualAuctionByBidId])
 
@@ -2632,7 +2778,7 @@ function App() {
     const normalizedProgress = Number.isFinite(Number(mappedRoute?.progress))
       ? Math.max(0, Math.min(100, Math.round(Number(mappedRoute.progress))))
       : 0
-    const winningAmount = (manualAuctionByBidId[wonBid.id]?.participants ?? []).find((participant) => participant.id === 'driver-self')?.amount ?? 0
+    const winningAmount = (manualAuctionByBidId[wonBid.id]?.participants ?? []).find((participant) => participant.isDriver)?.amount ?? 0
 
     return {
       sourceType: 'won-bid-shipment',
@@ -2954,6 +3100,60 @@ function App() {
     setBidActionMessage(message)
   }
 
+  const hydrateManualAuctionFromServer = (bid, leaderboard = [], auctionState = null, winner = null) => {
+    const opensAt = Number.isFinite(Number(auctionState?.opensAt)) ? Number(auctionState.opensAt) : bid.biddingStartAt
+    const closesAt = Number.isFinite(Number(auctionState?.closesAt)) ? Number(auctionState.closesAt) : bid.biddingEndAt
+    const normalizedDriverEmail = resolveDriverSettingsEmail(settings)
+
+    const participants = (Array.isArray(leaderboard) ? leaderboard : []).map((entry, index) => {
+      const entryId = String(entry.driverId || entry.driverEmail || `participant-${index + 1}`)
+      const entryEmail = String(entry.driverEmail || '').trim().toLowerCase()
+
+      return {
+        id: entryId,
+        name: String(entry.driverName || entry.driverEmail || `Bidder ${index + 1}`),
+        amount: Number(entry.amount) || 0,
+        updatedAt: new Date(entry.submittedAt || Date.now()).getTime(),
+        isDriver: entryEmail !== '' && entryEmail === normalizedDriverEmail,
+      }
+    })
+
+    const winnerId = winner
+      ? String(winner.driverId || winner.driverEmail || '')
+      : null
+
+    setManualAuctionByBidId((previous) => ({
+      ...previous,
+      [bid.id]: {
+        ...(previous[bid.id] || {}),
+        biddingStartAt: opensAt,
+        biddingEndAt: closesAt,
+        nextAutoUpdateAt: Date.now() + 5000,
+        participants,
+        winnerId,
+      },
+    }))
+  }
+
+  const syncLeaderboardFromServer = async (bid) => {
+    if (!linkedBidIdSet.has(bid.id)) {
+      return false
+    }
+
+    try {
+      const response = await fetch(`/api/live-bids/${encodeURIComponent(bid.id)}/leaderboard`)
+      if (!response.ok) {
+        return false
+      }
+
+      const payload = await response.json()
+      hydrateManualAuctionFromServer(bid, payload?.leaderboard, payload?.auctionState, payload?.winner)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const createManualAuctionSession = (bid) => {
     const now = Date.now()
     const biddingStartAt = Number.isFinite(bid.biddingStartAt) ? bid.biddingStartAt : now + 20000
@@ -3024,14 +3224,21 @@ function App() {
 
     if (now < opensAt) {
       const secondsToStart = Math.max(0, Math.ceil((opensAt - now) / 1000))
-      showBidActionMessage(`Manual panel opened for ${bid.id}. Live window starts in ${formatCountdownClock(secondsToStart)}.`)
+      showBidActionMessage(`Manual panel opened for ${bid.id}. Live window starts in ${formatBidRemainingTime(secondsToStart)}.`)
+      if (linkedBidIdSet.has(bid.id)) {
+        void syncLeaderboardFromServer(bid)
+      }
       return
+    }
+
+    if (linkedBidIdSet.has(bid.id)) {
+      void syncLeaderboardFromServer(bid)
     }
 
     showBidActionMessage(`Manual bidding opened for ${bid.id}.`) 
   }
 
-  const handlePlaceManualAuctionBid = (bid) => {
+  const handlePlaceManualAuctionBid = async (bid) => {
     const draft = Number(personalBidDraftById[bid.id])
     if (!Number.isFinite(draft) || draft <= 0) {
       showBidActionMessage('Enter a valid bid amount before submitting to live auction.')
@@ -3039,6 +3246,53 @@ function App() {
     }
 
     const roundedDraft = Math.round(draft)
+
+    if (linkedBidIdSet.has(bid.id)) {
+      const normalizedDriverEmail = resolveDriverSettingsEmail(settings)
+      const normalizedDriverName = String(settings.fullName || 'You (Driver)').trim()
+      const normalizedDriverId = `driver-${normalizedDriverEmail.replace(/[^a-z0-9]/g, '') || 'self'}`
+
+      try {
+        const response = await fetch(`/api/live-bids/${encodeURIComponent(bid.id)}/place-bid`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            driverId: normalizedDriverId,
+            driverName: normalizedDriverName,
+            driverEmail: normalizedDriverEmail,
+            amount: roundedDraft,
+          }),
+        })
+
+        const payload = await response.json().catch(() => null)
+
+        if (response.ok) {
+          hydrateManualAuctionFromServer(bid, payload?.leaderboard, payload?.auctionState, payload?.winner)
+          showBidActionMessage(`Live bid submitted: ${formatCurrencyValue(roundedDraft)} on ${bid.id}.`)
+          return
+        }
+
+        if (payload?.leaderboard || payload?.auctionState) {
+          hydrateManualAuctionFromServer(bid, payload?.leaderboard, payload?.auctionState, payload?.winner)
+        }
+
+        const serverMessage = String(payload?.message || '').trim()
+        if (serverMessage) {
+          showBidActionMessage(serverMessage)
+        } else {
+          showBidActionMessage(`Unable to submit live bid for ${bid.id}.`)
+        }
+
+        if (response.status !== 404) {
+          return
+        }
+      } catch {
+        showBidActionMessage(`Live endpoint unavailable. Using local simulation for ${bid.id}.`)
+      }
+    }
+
     const now = Date.now()
     let auctionClosed = false
     let auctionNotStarted = false
@@ -3067,10 +3321,10 @@ function App() {
         return previous
       }
 
-      const hasSelf = existingAuction.participants.some((participant) => participant.id === 'driver-self')
+      const hasSelf = existingAuction.participants.some((participant) => participant.isDriver)
       const nextParticipants = hasSelf
         ? existingAuction.participants.map((participant) => {
-          if (participant.id !== 'driver-self') {
+          if (!participant.isDriver) {
             return participant
           }
 
@@ -3103,7 +3357,7 @@ function App() {
     })
 
     if (auctionNotStarted) {
-      showBidActionMessage(`Bidding for ${bid.id} starts in ${formatCountdownClock(secondsToStart)}.`)
+      showBidActionMessage(`Bidding for ${bid.id} starts in ${formatBidRemainingTime(secondsToStart)}.`)
       return
     }
 
@@ -3112,7 +3366,7 @@ function App() {
       return
     }
 
-    showBidActionMessage(`Live bid submitted: ${formatCurrencyValue(roundedDraft)} on ${bid.id}.`)
+    showBidActionMessage(`Live bid submitted (local): ${formatCurrencyValue(roundedDraft)} on ${bid.id}.`)
   }
 
   const handleOpenBidDetails = (bidId) => {
@@ -3154,7 +3408,7 @@ function App() {
 
     if (now < opensAt) {
       const secondsToStart = Math.max(0, Math.ceil((opensAt - now) / 1000))
-      showBidActionMessage(`Manual panel opened. Live bidding starts in ${formatCountdownClock(secondsToStart)}.`)
+      showBidActionMessage(`Manual panel opened. Live bidding starts in ${formatBidRemainingTime(secondsToStart)}.`)
     }
   }
 
@@ -3288,7 +3542,7 @@ function App() {
 
     const timeoutId = window.setTimeout(() => {
       setBidActionMessage('')
-    }, 3000)
+    }, 5000)
 
     return () => {
       window.clearTimeout(timeoutId)
@@ -3430,6 +3684,33 @@ function App() {
                 })}
               </div>
             </header>
+
+            {bidActionMessage ? (
+              <div className="pointer-events-none fixed right-6 top-[96px] z-[130] w-full max-w-[360px] px-4 sm:px-0">
+                <div className="pointer-events-auto rounded-xl border border-blue-100 bg-white/95 px-4 py-3 shadow-xl backdrop-blur">
+                  <div className="flex items-start gap-3">
+                    <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-blue-100 text-blue-700">
+                      <Bell className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[0.72rem] font-black uppercase tracking-[0.08em] text-blue-700">Driver Notification</p>
+                      <p className="mt-1 text-[0.78rem] font-semibold text-slate-700">{bidActionMessage}</p>
+                      {lastImportedBidSheet ? (
+                        <p className="mt-1 text-[0.7rem] font-semibold text-slate-500">Last imported sheet: {lastImportedBidSheet}</p>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setBidActionMessage('')}
+                      className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                      aria-label="Close notification"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {activeSection === 'dashboard' ? (
               <>
@@ -5104,23 +5385,11 @@ function App() {
                         <p>Weight: <span className="font-black">{(driverWonShipments[0].weightLbs ?? 0).toLocaleString()} lbs</span></p>
                         <p>Pallets: <span className="font-black">{driverWonShipments[0].palletCount}</span></p>
                         <p>Commodity: <span className="font-black">{driverWonShipments[0].commodity}</span></p>
-                        <p>Winning Amount: <span className="font-black">{formatCurrencyValue((manualAuctionByBidId[driverWonShipments[0].id]?.participants ?? []).find((participant) => participant.id === 'driver-self')?.amount ?? 0)}</span></p>
+                        <p>Winning Amount: <span className="font-black">{formatCurrencyValue((manualAuctionByBidId[driverWonShipments[0].id]?.participants ?? []).find((participant) => participant.isDriver)?.amount ?? 0)}</span></p>
                       </div>
                     </div>
                   ) : null}
 
-                  {(bidActionMessage || lastImportedBidSheet) ? (
-                    <div className="pointer-events-none fixed right-6 top-[96px] z-[120] w-full max-w-[360px]">
-                      <div className="rounded-xl border border-blue-100 bg-white/95 px-4 py-3 shadow-xl backdrop-blur">
-                        {bidActionMessage ? (
-                          <p className="text-[0.75rem] font-semibold text-blue-700">{bidActionMessage}</p>
-                        ) : null}
-                        {lastImportedBidSheet ? (
-                          <p className="mt-1 text-[0.72rem] font-semibold text-slate-500">Last imported sheet: {lastImportedBidSheet}</p>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : null}
                 </div>
 
                 <div className="relative flex-1 overflow-hidden">
@@ -5144,7 +5413,7 @@ function App() {
                                 : 'SCHEDULED'
                           const portalStatusCountdown = isPortalClosed
                             ? '00:00'
-                            : formatCountdownClock(isPortalLive ? portalSecondsToClose : portalSecondsToStart)
+                            : formatBidRemainingTime(isPortalLive ? portalSecondsToClose : portalSecondsToStart)
                           const portalStatusStyle = isPortalLive
                             ? 'bg-emerald-100 text-emerald-700'
                             : isPortalClosed
@@ -5657,13 +5926,13 @@ function App() {
                                     </div>
 
                                     <p className="mt-3 rounded-lg bg-violet-100 px-3 py-2 text-[0.72rem] font-bold text-violet-800">
-                                      Highest bid at timer close wins parcel allocation for this lane.
+                                      Lowest bid at timer close wins parcel allocation for this lane.
                                     </p>
 
                                     <div className="mt-2 min-h-[38px]">
                                       {selectedBidManualLeaderGap > 0 ? (
                                         <p className="rounded-lg bg-amber-100 px-3 py-2 text-[0.72rem] font-bold text-amber-800">
-                                          You are behind leader by {formatCurrencyValue(selectedBidManualLeaderGap)}. Increase your bid to move up.
+                                          You are above leader by {formatCurrencyValue(selectedBidManualLeaderGap)}. Lower your bid to take rank 1.
                                         </p>
                                       ) : selectedBidManualDriverEntry ? (
                                         <p className="rounded-lg bg-emerald-100 px-3 py-2 text-[0.72rem] font-bold text-emerald-800">
@@ -6143,11 +6412,17 @@ function App() {
                       </button>
                       <button
                         onClick={handleSaveAllDriverSettings}
-                        className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-[0.78rem] font-bold text-white shadow-sm transition hover:bg-blue-700"
+                        disabled={settingsSyncState === 'syncing'}
+                        className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-[0.78rem] font-bold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
                       >
                         <FileCheck2 className="h-4 w-4" />
-                        Save Preferences
+                        {settingsSyncState === 'syncing' ? 'Syncing...' : 'Save Preferences'}
                       </button>
+                      {settingsSyncMessage && (
+                        <span className={`rounded-lg border px-2.5 py-1 text-[0.66rem] font-bold ${settingsSyncState === 'error' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-blue-200 bg-blue-50 text-blue-700'}`}>
+                          {settingsSyncMessage}
+                        </span>
+                      )}
                       {settingsLastSavedAt && (
                         <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[0.66rem] font-bold text-emerald-700">
                           Saved {new Date(settingsLastSavedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
